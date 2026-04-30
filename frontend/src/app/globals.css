@@ -1,0 +1,198 @@
+/* ============================================
+   SKETCHPAD & INK — Design System
+   Tailwind v4 + Custom Hand-Drawn Tokens
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Patrick+Hand&display=swap');
+@import "tailwindcss";
+
+/* --- Tailwind Theme Extension --- */
+@theme {
+  --font-heading: 'Kalam', cursive;
+  --font-body: 'Patrick Hand', cursive;
+
+  --color-sketch-bg: #fbf9f5;
+  --color-sketch-bg-alt: #f5f0e8;
+  --color-sketch-ink: #2d2d2d;
+  --color-sketch-red: #ff4d4d;
+  --color-sketch-red-dark: #b71422;
+  --color-sketch-blue: #2d5da1;
+  --color-sketch-yellow: #fff385;
+  --color-sketch-surface: #ffffff;
+  --color-sketch-surface-dim: #efeeea;
+  --color-sketch-muted: #8f6f6d;
+  --color-sketch-tape: rgba(255,255,255,0.35);
+  --color-sketch-error: #ba1a1a;
+}
+
+/* --- CSS Custom Props (for non-Tailwind use) --- */
+:root {
+  --shadow-sm: 4px 4px 0px 0px #2d2d2d;
+  --shadow-md: 6px 6px 0px 0px #2d2d2d;
+  --shadow-lg: 8px 8px 0px 0px #2d2d2d;
+  --shadow-pressed: 0px 0px 0px 0px #2d2d2d;
+  --shadow-red: 4px 4px 0px 0px #ff4d4d;
+  --shadow-blue: 4px 4px 0px 0px #2d5da1;
+
+  --border-pencil: 2px solid #2d2d2d;
+  --wobbly-radius: 30px 20px 28px 22px / 26px 28px 20px 30px;
+  --wobbly-radius-alt: 22px 30px 18px 28px / 30px 18px 28px 20px;
+  --wobbly-radius-btn: 50px 46px 50px 46px / 46px 50px 46px 50px;
+
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --margin: 32px;
+}
+
+/* --- Base Styles --- */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.5;
+  color: #2d2d2d;
+  background-color: #fbf9f5;
+  background-image: radial-gradient(circle, #e8e4db 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #2d2d2d;
+}
+
+h1 { font-size: 48px; }
+h2 { font-size: 32px; }
+h3 { font-size: 24px; }
+
+a {
+  color: #2d5da1;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+a:hover {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+}
+
+img { max-width: 100%; height: auto; }
+
+/* --- Wobbly Shapes (cannot be done with Tailwind) --- */
+.wobbly { border-radius: var(--wobbly-radius); }
+.wobbly-alt { border-radius: var(--wobbly-radius-alt); }
+.wobbly-btn { border-radius: var(--wobbly-radius-btn); }
+
+/* --- Hard Shadows (not standard Tailwind) --- */
+.shadow-sketch    { box-shadow: var(--shadow-sm); }
+.shadow-sketch-md { box-shadow: var(--shadow-md); }
+.shadow-sketch-lg { box-shadow: var(--shadow-lg); }
+.shadow-sketch-red  { box-shadow: var(--shadow-red); }
+.shadow-sketch-blue { box-shadow: var(--shadow-blue); }
+.shadow-pressed     { box-shadow: var(--shadow-pressed); }
+
+/* --- Tape decoration --- */
+.tape::before, .tape::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 24px;
+  background: var(--color-sketch-tape, rgba(255,255,255,0.35));
+  border: 1px solid rgba(0,0,0,0.08);
+  z-index: 2;
+}
+.tape::before { top: -10px; left: 20px; transform: rotate(-8deg); }
+.tape::after  { bottom: -10px; right: 20px; transform: rotate(5deg); }
+
+/* --- Thumbtack --- */
+.pinned::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  background: #ff4d4d;
+  border: 2px solid #2d2d2d;
+  border-radius: 50%;
+  z-index: 3;
+  box-shadow: 0 2px 0 #2d2d2d;
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-8px) rotate(1deg); }
+}
+.animate-float { animation: float 5s ease-in-out infinite; }
+
+/* --- Highlight span --- */
+.highlight {
+  background: #fff385;
+  padding: 0 6px;
+  border-radius: 2px;
+}
+
+/* --- Dotted background pattern on alt section --- */
+.section-alt-bg {
+  background: #f5f0e8;
+  border-top: 2px solid #2d2d2d;
+  border-bottom: 2px solid #2d2d2d;
+}
+
+/* --- Benefit list checkmarks --- */
+.benefit-list li::before {
+  content: '\2713';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #ff4d4d;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+  border: 2px solid #2d2d2d;
+  margin-right: 10px;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #fbf9f5; }
+::-webkit-scrollbar-thumb {
+  background: #8f6f6d;
+  border: 2px solid #fbf9f5;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: #2d2d2d; }
+
+/* --- Radar SVG chart --- */
+.radar-chart {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1;
+}
+
+/* --- Hand-drawn HR --- */
+.hand-drawn-hr {
+  border: none;
+  height: 4px;
+  background: #2d2d2d;
+  margin: 2.5rem auto;
+  max-width: 200px;
+  border-radius: 50%;
+  opacity: 0.3;
+}
