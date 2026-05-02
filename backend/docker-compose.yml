@@ -1,0 +1,81 @@
+services:
+  # 1. Database
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: ms_postgres
+    restart: always
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Profile Service
+  profile_service:
+    build: ./services/profile_service
+    container_name: ms_profile_service
+    restart: always
+    env_file: .env
+    volumes:
+      - ${PWD}/services/profile_service:/app
+    depends_on:
+      - postgres_db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 3. RIASEC Service
+  riasec_service:
+    build: ./services/riasec_service
+    container_name: ms_riasec_service
+    restart: always
+    env_file: .env
+    volumes:
+      - ${PWD}/services/riasec_service:/app
+    depends_on:
+      - postgres_db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 4. Admission Service
+  admission_service:
+    build: ./services/admission_service
+    container_name: ms_admission_service
+    restart: always
+    env_file: .env
+    volumes:
+      - ${PWD}/services/admission_service:/app
+    depends_on:
+      - postgres_db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 5. RAG Service
+  rag_service:
+    build: ./services/rag_service
+    container_name: ms_rag_service
+    restart: always
+    env_file: .env
+    volumes:
+      - ${PWD}/services/rag_service:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 6. API Gateway
+  api_gateway:
+    build: ./api_gateway
+    container_name: ms_api_gateway
+    restart: always
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${PWD}/api_gateway:/app
+    depends_on:
+      - profile_service
+      - riasec_service
+      - admission_service
+      - rag_service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: ai_admission_network
