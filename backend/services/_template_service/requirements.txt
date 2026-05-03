@@ -1,0 +1,10 @@
+# --- CÁC THƯ VIỆN LÕI CỦA MỘT SERVICE ---
+fastapi==0.110.0
+uvicorn==0.29.0
+pydantic-settings==2.2.1
+
+# --- DATABASE & MIGRATION ---
+sqlalchemy==2.0.29
+psycopg2-binary==2.9.9
+alembic==1.13.1
+python-dotenv==1.0.1

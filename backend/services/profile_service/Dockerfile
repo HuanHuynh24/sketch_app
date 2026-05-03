@@ -1,13 +1,9 @@
 FROM python:3.11-slim
-
 WORKDIR /app
-
-# Cài đặt các thư viện cần thiết cho hệ điều hành để build psycopg2
-RUN apt-get update && apt-get install -y libpq-dev gcc
-
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . .
-
 EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
