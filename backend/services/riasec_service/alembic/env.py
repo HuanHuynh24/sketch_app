@@ -8,8 +8,7 @@ from dotenv import load_dotenv
 
 # Tự động nhận diện tên service để đặt tên bảng
 service_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-service_name = os.path.basename(service_dir)
-VERSION_TABLE = f"alembic_version_{service_name}"
+VERSION_TABLE = "alembic_version_riasec_service"
 
 # Import models
 sys.path.append(service_dir)
@@ -24,6 +23,12 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table":
+        # Chỉ quản lý các bảng được định nghĩa trong Base.metadata của service này
+        return name in target_metadata.tables
+    return True
+
 def run_migrations_offline() -> None:
     url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -32,6 +37,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         version_table=VERSION_TABLE,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -52,6 +58,7 @@ def run_migrations_online() -> None:
             connection=connection, 
             target_metadata=target_metadata,
             version_table=VERSION_TABLE,
+            include_object=include_object,
         )
         with context.begin_transaction():
             context.run_migrations()

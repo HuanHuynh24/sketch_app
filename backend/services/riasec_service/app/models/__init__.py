@@ -1,4 +1,4 @@
 # Mọi Model bạn tạo sau này (ví dụ User, Score) đều phải import vào đây
 from .base import Base
-
-# Ví dụ sau này: from .user import User
+from .riasec_session import RiasecSession
+from .conversation_message import ConversationMessage
