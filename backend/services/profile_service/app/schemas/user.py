@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from uuid import UUID
+
 # Dữ liệu Frontend gửi lên khi đăng ký
 class UserCreate(BaseModel):
     email: str
@@ -8,7 +10,7 @@ class UserCreate(BaseModel):
 
 # Dữ liệu Backend trả về (Giấu password đi)
 class UserResponse(BaseModel):
-    id: int
+    student_id: UUID
     email: str
     full_name: str
     is_active: bool

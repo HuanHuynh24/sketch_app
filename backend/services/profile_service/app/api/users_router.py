@@ -7,9 +7,13 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
+from pydantic import BaseModel
 from app.services.user_service import user_service
 from app.api.deps import get_current_user
 from app.models.user import User
+
+class LoginResponse(Token):
+    user: UserResponse
 
 router = APIRouter()
 
@@ -26,7 +30,7 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
         )
     return new_user
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 def login_for_access_token(
     db: Session = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
@@ -55,7 +59,15 @@ def login_for_access_token(
         expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+@router.post("/logout")
+def logout_user(current_user: User = Depends(get_current_user)):
+    """
+    API Đăng xuất. 
+    Với JWT, backend không cần làm gì nhiều ngoài việc yêu cầu client xóa token ở local storage.
+    """
+    return {"message": "Đăng xuất thành công. Vui lòng xóa token ở client."}
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):

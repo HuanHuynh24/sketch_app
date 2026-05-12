@@ -10,7 +10,9 @@ class UserRepository:
         db_user = User(
             email=user_in.email,
             full_name=user_in.full_name,
-            hashed_password=hashed_password
+            password_hash=hashed_password,
+            province=getattr(user_in, 'province', 'Chưa cập nhật'),
+            area_code=getattr(user_in, 'area_code', 'KV3'),
         )
         db.add(db_user)
         db.commit()

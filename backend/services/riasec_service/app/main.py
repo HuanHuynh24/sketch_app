@@ -1,12 +1,19 @@
 from fastapi import FastAPI
-from app.api import health
-from app.core.config import settings
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.endpoints import riasec
 
-app = FastAPI(title=settings.PROJECT_NAME)
+app = FastAPI(title="RIASEC Service")
 
-# Gắn các API Router vào ứng dụng
-app.include_router(health.router, tags=["Health Check"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/")
-def root():
-    return {"message": f"Welcome to {settings.PROJECT_NAME}"}
+app.include_router(riasec.router, prefix="/api/riasec", tags=["RIASEC"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

@@ -60,6 +60,7 @@ class User(Base):
     top_groups       = Column(ARRAY(String),nullable=True, comment="Mảng nhóm nổi trội: ['R','I']")
     confidence       = Column(Float,        nullable=True, comment="Độ tin cậy kết quả (0.0–1.0)")
     reasoning        = Column(Text,         nullable=True, comment="Lý giải AI dựa trên bằng chứng hội thoại")
+    description      = Column(Text,         nullable=True, comment="Mô tả ngắn gọn về kiểu người (AI đánh giá)")
     suggested_majors = Column(JSONB,        nullable=True, comment="Danh sách nhóm ngành gợi ý + mô tả")
     created_at   = Column(TIMESTAMP(timezone=True), nullable=True, comment="Thời điểm tạo user")
     updated_at   = Column(TIMESTAMP(timezone=True), nullable=True, comment="Thời điểm cập nhật user")   

@@ -17,7 +17,7 @@ class UserService:
         user = user_repo.get_by_email(db, email=user_login.email)
         if not user:
             return None
-        if not verify_password(user_login.password, user.hashed_password):
+        if not verify_password(user_login.password, user.password_hash):
             return None
         return user
 
