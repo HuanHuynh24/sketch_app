@@ -21,4 +21,21 @@ class UserService:
             return None
         return user
 
+    def update_riasec_scores(self, db: Session, student_id: str, scores_100: dict, confidence: float, top_groups: list, riasec_code: str):
+        return user_repo.update_riasec_scores(
+            db=db,
+            student_id=student_id,
+            scores_100=scores_100,
+            confidence=confidence,
+            top_groups=top_groups,
+            riasec_code=riasec_code
+        )
+
+    def update_riasec_final(self, db: Session, student_id: str, final_data: dict):
+        return user_repo.update_riasec_final(
+            db=db,
+            student_id=student_id,
+            final_data=final_data
+        )
+
 user_service = UserService()

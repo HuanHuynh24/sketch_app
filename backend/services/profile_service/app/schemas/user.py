@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
-
 from uuid import UUID
+from typing import Dict, List, Any
 
 # Dữ liệu Frontend gửi lên khi đăng ký
 class UserCreate(BaseModel):
@@ -24,3 +24,13 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+# Schemas cập nhật nội bộ RIASEC
+class RiasecScoresUpdate(BaseModel):
+    scores_100: Dict[str, float]
+    confidence: float
+    top_groups: List[str]
+    riasec_code: str
+
+class RiasecFinalUpdate(BaseModel):
+    final_data: Dict[str, Any]

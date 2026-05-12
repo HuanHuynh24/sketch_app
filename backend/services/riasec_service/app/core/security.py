@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
+from jose import jwt, JWTError
 from app.core.config import settings
 
 security = HTTPBearer(auto_error=False)
@@ -9,14 +9,13 @@ def get_current_user_id(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> str:
     """
-    Xác thực JWT token và trả về user_id (email/student_id).
-    Nếu AUTH_ENABLED=False → trả về mock ID để test nhanh.
+    Xác thực JWT token bằng python-jose và trả về user_id (email/student_id).
+    Nếu settings.AUTH_ENABLED = False -> sử dụng chế độ mock test nhanh.
+    Nếu settings.AUTH_ENABLED = True (hoặc khi bật xác thực) -> bắt buộc kiểm tra JWT Token hợp lệ.
     """
-    # Mock mode cho development/testing
     if not settings.AUTH_ENABLED:
         return "test_user_id"
 
-    # Production mode — yêu cầu Bearer token
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,7 +40,7 @@ def get_current_user_id(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token đã hết hạn",
         )
-    except jwt.PyJWTError:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Không thể xác thực token",

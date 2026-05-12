@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import riasec
+from app.api.endpoints import riasec_groq
 
-app = FastAPI(title="RIASEC Service")
+app = FastAPI(title="RIASEC Service (Groq Super Speed)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,7 +12,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(riasec.router, prefix="/api/riasec", tags=["RIASEC"])
+# Nạp Router mới từ riasec_groq thay vì riasec.py cũ
+app.include_router(riasec_groq.router, prefix="/api/riasec", tags=["RIASEC"])
 
 @app.get("/health")
 def health_check():

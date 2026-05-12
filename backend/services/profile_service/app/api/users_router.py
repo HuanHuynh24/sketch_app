@@ -6,7 +6,7 @@ from datetime import timedelta
 from app.core.database import get_db
 from app.core.config import settings
 from app.core.security import create_access_token
-from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
+from app.schemas.user import UserCreate, UserResponse, UserLogin, Token, RiasecScoresUpdate, RiasecFinalUpdate
 from pydantic import BaseModel
 from app.services.user_service import user_service
 from app.api.deps import get_current_user
@@ -76,3 +76,46 @@ def read_users_me(current_user: User = Depends(get_current_user)):
     Yêu cầu phải có Header Authorization: Bearer <token>
     """
     return current_user
+
+# ---------------------------------------------------------------------------
+# API NỘI BỘ (Internal Microservice Endpoints)
+# ---------------------------------------------------------------------------
+
+@router.patch("/internal/users/{student_id}/riasec-scores")
+def update_user_riasec_scores(
+    student_id: str,
+    data: RiasecScoresUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    API nội bộ: RIASEC service gọi để cập nhật điểm tạm thời của học sinh THPT.
+    """
+    user = user_service.update_riasec_scores(
+        db=db,
+        student_id=student_id,
+        scores_100=data.scores_100,
+        confidence=data.confidence,
+        top_groups=data.top_groups,
+        riasec_code=data.riasec_code
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"status": "success", "message": "Scores updated successfully via internal API"}
+
+@router.patch("/internal/users/{student_id}/riasec-final")
+def update_user_riasec_final(
+    student_id: str,
+    data: RiasecFinalUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    API nội bộ: RIASEC service gọi để cập nhật báo cáo và phân tích trắc nghiệm cuối cùng từ Gemini.
+    """
+    user = user_service.update_riasec_final(
+        db=db,
+        student_id=student_id,
+        final_data=data.final_data
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"status": "success", "message": "Final scoring completed via internal API"}
