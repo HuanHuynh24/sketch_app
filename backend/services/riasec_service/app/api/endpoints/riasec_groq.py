@@ -5,33 +5,19 @@ from typing import Optional, Dict, List
 from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.schemas.riasec import (
-    SessionResponse,
-    SessionAbandonResponse,
-    HistoryResponse, MessageItem,
     ResultResponse, ScoreDetail,
+    UnifiedChatRequest, UnifiedChatResponse,
 )
 from app.repositories.riasec_session_repo import riasec_session_repo
 from app.repositories.conversation_message_repo import conversation_message_repo
 from app.services.llm_groq_service import generate_greeting, generate_question, extract_signal
 from app.services.scoring_groq_service import calc_confidence, should_stop, run_final_scoring_job, update_user_scores
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-
-# ---------------------------------------------------------------------------
-# SCHEMAS DÀNH CHO API ĐƠN (Unified 1-API Flow)
-# ---------------------------------------------------------------------------
-class UnifiedChatRequest(BaseModel):
-    student_id: str
-    answer: Optional[str] = None
-
-class UnifiedChatResponse(BaseModel):
-    status: str            # "in_progress" | "completed"
-    session_id: str
-    question_no: int
-    message: str           # Câu hỏi tiếp theo (nếu in_progress) hoặc lời chúc hoàn thành (nếu completed)
-    confidence: float
-    scores: Dict[str, float]
 
 
 # ---------------------------------------------------------------------------
@@ -47,8 +33,25 @@ async def unified_chat(
     student_id = data.student_id
     answer = data.answer.strip() if data.answer else None
 
+    # Ưu tiên sử dụng student_id giải mã trực tiếp từ JWT (được lưu tại user_id)
+    # khi AUTH_ENABLED = True để đảm bảo độ tin cậy bảo mật tuyệt đối, loại bỏ lỗi gửi nhầm student_id từ body.
+    from app.core.config import settings
+    if settings.AUTH_ENABLED and user_id and user_id != "test_user_id":
+        try:
+            import uuid
+            uuid.UUID(user_id)
+            student_id = user_id
+        except ValueError:
+            pass
+
+    if not student_id:
+        raise HTTPException(status_code=400, detail="student_id is required")
+
+
+
     # 1. Tìm kiếm session đang hoạt động ("in_progress") của học sinh này
     session = riasec_session_repo.get_active_session_by_student_id(db, student_id)
+
 
     # TRƯỜNG HỢP A: BẮT ĐẦU HOẶC KHÔI PHỤC PHIÊN CHAT
     if not session:
@@ -211,56 +214,24 @@ async def unified_chat(
 # CÁC API TRUY VẤN VẪN ĐƯỢC GIỮ LẠI ĐỂ TƯƠNG THÍCH HOÀN TOÀN (Backward Compatibility)
 # ---------------------------------------------------------------------------
 
-@router.get("/sessions/{session_id}", response_model=SessionResponse)
-def get_session(
-    session_id: str,
-    db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user_id),
-):
-    session = riasec_session_repo.get_by_id(db, session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return {
-        "session_id": str(session.session_id),
-        "status": session.status,
-        "question_count": session.question_count,
-        "confidence": session.confidence,
-    }
-
-
-@router.get("/sessions/{session_id}/history", response_model=HistoryResponse)
-def get_session_history(
-    session_id: str,
-    db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user_id),
-):
-    session = riasec_session_repo.get_by_id(db, session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    messages = conversation_message_repo.get_history_by_session_id(db, session_id)
-
-    return {
-        "session_id": str(session.session_id),
-        "messages": [
-            MessageItem(
-                role=m.role,
-                content=m.content,
-                sequence_no=m.sequence_no,
-            )
-            for m in messages
-        ],
-        "question_count": session.question_count,
-        "status": session.status,
-    }
-
+# ---------------------------------------------------------------------------
+# API TRUY VẤN KẾT QUẢ ĐÃ ĐƯỢC TỐI ƯU HÓA (Senior Architecture)
+# ---------------------------------------------------------------------------
 
 @router.get("/sessions/{session_id}/result", response_model=ResultResponse)
-def get_session_result(
+async def get_session_result(
     session_id: str,
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id),
 ):
+    """
+    Lấy kết quả RIASEC chi tiết của session.
+    Các trường riasec_code, top_groups, confidence, reasoning, suggested_majors được lấy từ bảng users
+    thông qua API nội bộ gọi sang profile_service để đảm bảo dữ liệu hiển thị chính xác nhất.
+    """
+    import httpx
+    from app.core.config import settings
+
     session = riasec_session_repo.get_by_id(db, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -271,36 +242,53 @@ def get_session_result(
             detail=f"Session chưa hoàn thành (status: {session.status})",
         )
 
+    # Lấy thông tin chi tiết của học sinh từ profile_service qua API nội bộ
+    user_data = {}
+    try:
+        url = f"{settings.PROFILE_SERVICE_URL}/api/profile/internal/users/{session.student_id}"
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url)
+            if resp.status_code == 200:
+                user_data = resp.json()
+            else:
+                logger.error(f"[GROQ FLOW] Failed to fetch internal user data for result: {resp.text}")
+    except Exception as e:
+        logger.error(f"[GROQ FLOW] Error calling profile_service for user result: {e}")
+
+    # Nếu có dữ liệu từ bảng users, dùng dữ liệu đó. Ngược lại dùng fallback từ session
+    riasec_code = user_data.get("riasec_code")
+    top_groups = user_data.get("top_groups")
+    confidence = user_data.get("confidence") if user_data.get("confidence") is not None else session.confidence
+    reasoning = user_data.get("reasoning")
+    suggested_majors = user_data.get("suggested_majors")
+
+    # Điểm số (ưu tiên từ bảng user nếu có, fallback từ session)
     scores = session.current_scores or {}
+    if user_data:
+        scores = {
+            "R": user_data.get("score_R", 0.0),
+            "I": user_data.get("score_I", 0.0),
+            "A": user_data.get("score_A", 0.0),
+            "S": user_data.get("score_S", 0.0),
+            "E": user_data.get("score_E", 0.0),
+            "C": user_data.get("score_C", 0.0),
+        }
 
     return {
         "session_id": str(session.session_id),
         "status": session.status,
         "scores": ScoreDetail(
-            R=scores.get("R", 0),
-            I=scores.get("I", 0),
-            A=scores.get("A", 0),
-            S=scores.get("S", 0),
-            E=scores.get("E", 0),
-            C=scores.get("C", 0),
+            R=scores.get("R", 0.0),
+            I=scores.get("I", 0.0),
+            A=scores.get("A", 0.0),
+            S=scores.get("S", 0.0),
+            E=scores.get("E", 0.0),
+            C=scores.get("C", 0.0),
         ),
-        "confidence": session.confidence,
+        "riasec_code": riasec_code,
+        "top_groups": top_groups,
+        "confidence": confidence,
+        "reasoning": reasoning,
+        "suggested_majors": suggested_majors,
     }
 
-
-@router.patch("/sessions/{session_id}/abandon", response_model=SessionAbandonResponse)
-def abandon_session(
-    session_id: str,
-    db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user_id),
-):
-    session = riasec_session_repo.get_by_id(db, session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    if session.status == "completed":
-        raise HTTPException(status_code=409, detail="Session đã hoàn thành, không thể hủy")
-    if session.status == "abandoned":
-        raise HTTPException(status_code=409, detail="Session đã bị hủy trước đó")
-
-    riasec_session_repo.abandon_session(db, session)
-    return {"session_id": str(session.session_id), "status": "abandoned"}

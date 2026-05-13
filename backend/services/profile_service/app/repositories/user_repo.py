@@ -62,8 +62,8 @@ class UserRepository:
         user.top_groups = top_groups
         user.confidence = final_data.get("confidence", 0.0)
         user.reasoning = final_data.get("reasoning")
-        user.description = final_data.get("description")
         user.suggested_majors = final_data.get("suggested_majors")
+
         db.commit()
         db.refresh(user)
         return user

@@ -11,13 +11,14 @@ logger = logging.getLogger(__name__)
 
 def calc_confidence(scores: dict, groups_asked: dict, question_no: int) -> float:
     """
-    Công thức tính confidence cho từng nhóm: confidence_group_X = min(observations_X / 3, 1.0)
+    Công thức tính confidence cho từng nhóm: confidence_group_X = min(observations_X / 2.0, 1.0)
     overall_confidence = harmonic_mean(confidence cho 6 nhóm)
+    Sửa đổi: Cho phép tích lũy confidence nhanh hơn để sẵn sàng dừng ở câu thứ 6-8.
     """
     group_confs = []
     for g in ["R", "I", "A", "S", "E", "C"]:
         obs = groups_asked.get(g, 0)
-        c = min(obs / 3.0, 1.0)
+        c = min(obs / 2.0, 1.0)
         group_confs.append(c)
     
     # Calculate harmonic mean (thêm 0.01 để tránh chia cho 0)
@@ -28,11 +29,12 @@ def calc_confidence(scores: dict, groups_asked: dict, question_no: int) -> float
 
 def should_stop(confidence: float, scores: dict, question_no: int) -> bool:
     """
-    Điều kiện dừng hội thoại RIASEC:
-    - Giới hạn cứng: 25 câu
-    - Lý tưởng: ~10-12 câu, confidence đủ cao và top 2 nhóm cách nhóm 3 > 15%
+    HỆ THỐNG GIỚI HẠN MỚI:
+    - Giới hạn cứng tối đa: 10 câu.
+    - Lý tưởng: Dừng từ câu thứ 6 đến câu thứ 8 nếu hiệu số điểm giữa top 2 nhóm cách biệt rõ ràng (> 12%).
     """
-    if question_no >= settings.MAX_QUESTIONS:
+    # 1. Giới hạn cứng tối đa 10 câu
+    if question_no >= 10:
         return True
         
     total = sum(scores.values()) or 1
@@ -43,10 +45,13 @@ def should_stop(confidence: float, scores: dict, question_no: int) -> bool:
         
     gap_top2_vs_3 = sorted_scores[1] - sorted_scores[2]
     
-    if question_no >= settings.MIN_QUESTIONS and gap_top2_vs_3 > settings.GAP_THRESHOLD and confidence >= settings.CONFIDENCE_THRESHOLD:
-        return True
-        
+    # 2. Lý tưởng dừng từ câu 6 - 8
+    if question_no >= 6:
+        if gap_top2_vs_3 >= 12.0 and confidence >= 0.70:
+            return True
+            
     return False
+
 
 
 def normalize_scores_to_100(raw_scores: dict) -> dict:

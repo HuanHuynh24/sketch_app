@@ -47,16 +47,131 @@ BỘ 60 CÂU HỎI RIASEC LÀM NGUỒN CẢM HỨNG (Cơ sở để xây dựng 
 
 MAJORS_MAPPING = """
 I. Nhóm ngành Công nghệ thông tin
+1. Khoa học máy tính
+2. Công nghệ phần mềm
+3. Mạng máy tính và truyền thông dữ liệu
+4. An ninh mạng
+5. Hệ thống thông tin quản lý
+6. Cơ sở dữ liệu
+7. Công nghệ web
+8. Trí tuệ nhân tạo
+9. Internet vạn vật (IoT)
+10. Thực tế Ảo (VR) và Thực tế Tăng cường (AR)
 II. Nhóm ngành Kinh doanh
+1. Ngành quản trị kinh doanh.
+2. Ngành quản trị dịch vụ du lịch và lữ hành
+3. Ngành quản trị khách sạn
+4. Ngành Marketing
+5. Ngành nghề bất động sản
+6. Ngành kinh doanh quốc tế
+7. Ngành kế toán
+8. Ngành kiểm toán
+9. Ngành quản trị nhân lực
+10. Ngành hệ thống thông tin quản lý
+11. Ngành quản trị văn phòng
+12. Ngành Kinh tế
 III. Nhóm ngành Kiến trúc và xây dựng
+1. Ngành quy hoạch đô thị
+2. Ngành kiến trúc công trình
+3. Ngành kỹ thuật công trình
+4. Ngành xây dựng cầu đường
+5. Ngành vật liệu và cấu kiện xây dựng
+6. Ngành xây dựng cảng – công trình biển
+7. Ngành thủy lợi – thủy điện và cấp thoát nước
+8. Ngành công trình thủy lợi
+9. Kỹ thuật xây dựng công trình giao thông
+10. Ngành Thiết kế nội thất
+11. Ngành Thiết kế công nghiệp 
 IV. Nhóm ngành Luật – Nhân văn
+1. Ngành Luật Kinh tế
+2. Ngành Luật Quốc tế
+3. Ngành Luật 
+4. Ngành Hàn Quốc học
+5. Ngành Nhật Bản học 
+6. Ngành Hán Nôm
+7. Ngành Triết học
+8. Ngành Trung Quốc học 
+9. Ngành Văn hóa học
+10. Ngành Quản lý văn hóa
+11. Ngành Lịch sử học 
+12. Các ngành ngôn ngữ 
+13. Ngành Nghệ thuật biểu diễn
+14. Ngành Tôn giáo 
 V. Nhóm ngành báo chí
-VI. Nhóm ngành Khoa học cơ bản
+1. Các ngành Báo chí 
+2. Ngành Truyền thông đa phương tiện
+3. Ngành công nghệ truyền thông
+4. Ngành quan hệ công chúng
+VI. Nhóm ngành Khoa học cơ bản 
+1. Ngành công nghệ sinh học
+2. Ngành sinh học
+3. Ngành kỹ thuật sinh học
+4. Ngành sinh học ứng dụng
+5. Ngành thiên văn học
+6. Ngành vật lý học
+7. Ngành khoa học đất
+8. Ngành toán học
+9. Ngành toán ứng dụng
+10. Ngành thống kê
 VII. Nhóm ngành Sư phạm
+1. Giáo dục Tiểu học
+2. Giáo dục Mầm non
+3. Giáo dục Chính trị
+4. Giáo dục Thể chất
+5. Sư phạm Toán học
+6. Sư phạm Tin học
+7. Sư phạm Vật lý
+8. Sư phạm Sinh học
+9. Sư phạm Hoá học
+10. Sư phạm Ngữ văn
+11. Sư phạm Lịch sử
+12. Sư phạm Địa lý
+13. Sư phạm Tiếng Anh
+14. Ngành giáo dục quốc phòng – an ninh
+15. Ngành giáo dục đặc biệt
+16. Ngành quản lý giáo dục
+17. Ngành Sư phạm Âm nhạc…
 VIII. Nhóm ngành nông – lâm – ngư nghiệp
+1. Ngành nông nghiệp (các ngành nông nghiệp – thú y)
+2. Ngành khuyến nông
+3. Ngành chăn nuôi
+4. Ngành nông học
+5. Ngành khoa học cây trồng
+6. Ngành bảo vệ thực vật học gì và làm gì?
+7. Ngành công nghệ rau hoa quả – cảnh quan
+8. Ngành kinh doanh nông nghiệp
+9. Ngành kinh tế nông nghiệp
+10. Ngành phát triển nông thôn
 IX. Nhóm ngành sản xuất và chế biến
+1. Ngành công nghệ thực phẩm
+2. Ngành công nghệ chế biến sau thu hoạch
+3. Công nghệ chế biến thủy sản
+4. Ngành kỹ thuật dệt
+5. Công nghệ sợi dệt
+6. Ngành công nghệ may học gì và làm gì?
+7. Công nghệ da giầy
+8. Công nghệ chế biến lâm sản
 X. Nhóm ngành sức khỏe
-XI. Nhóm ngành Kỹ thuật
+1. Y đa khoa
+2. Y học cổ truyền
+3. Điều dưỡng
+4. Răng hàm mặt
+5. Dược 
+6. Y tế công cộng
+7. Y học dự phòng
+8. Hộ sinh
+XI. Nhóm ngành Kỹ thuật 
+1. Công nghệ kỹ thuật nhiệt
+2. Công nghệ kỹ thuật hóa học 
+3. Công nghệ kỹ thuật
+4. Công nghệ kỹ thuật cơ – điện tử 
+5. Công nghệ kỹ thuật năng lượng
+6. Công nghệ kỹ thuật điện tử – viễn thông
+7. Công nghệ kỹ thuật điều khiển và tự động hóa
+8. Kỹ thuật dầu khí 
+9. Kỹ thuật nhiệt
+10. Công nghệ kỹ thuật ô tô
+11. Kỹ thuật Robot
 """
 
 SYSTEM_INSTRUCTION_AGENT = f"""Bạn là chuyên gia tư vấn hướng nghiệp thân thiện đang trò chuyện để đánh giá tính cách và sở thích.
@@ -72,24 +187,49 @@ SYSTEM_INSTRUCTION_AGENT = f"""Bạn là chuyên gia tư vấn hướng nghiệp
 {RIASEC_QUESTIONS_REF}
 """
 
-EXTRACT_SIGNAL_PROMPT = """Phân tích câu trả lời học sinh, trích xuất tín hiệu RIASEC.
-R=tay chân,kỹ thuật | I=phân tích,khoa học | A=sáng tạo,nghệ thuật
-S=giúp đỡ,cộng đồng | E=lãnh đạo,kinh doanh | C=quy trình,dữ liệu
-Chấm mỗi nhóm 0-3. Câu hỏi: {question} | Trả lời: {answer}
-JSON: {{"signals":{{"R":0,"I":0,"A":0,"S":0,"E":0,"C":0}},"answer_quality":"clear|vague|off_topic"}}"""
+EXTRACT_SIGNAL_PROMPT = """You are a precise data extraction assistant. Your task is to analyze the student's answer and extract RIASEC signals.
+R=physical/hands-on | I=analytical/science | A=creative/arts
+S=helping/community | E=leadership/business | C=order/records
 
-SYSTEM_PROMPT_SCORING = f"""Phân tích TOÀN BỘ hội thoại, chuẩn hoá điểm 0-100 cho 6 nhóm RIASEC.
-- Dựa trên lịch sử hội thoại, tính điểm cho R, I, A, S, E, C.
-- Xác định top 2 hoặc 3 nhóm (riasec_code).
-- Tạo `reasoning` (Lý do chọn nhóm).
-- Tạo `description`: Một câu nhận xét ngắn, ví dụ "Bạn là kiểu người thích sáng tạo, với trí tưởng tượng phong phú".
-- Gợi ý chuyên ngành dựa vào danh sách 11 nhóm ngành sau:
+Rate each group from 0 to 3 based on the user's answer.
+Question: {question}
+Answer: {answer}
+
+You must return a valid json object with the following schema:
+{"signals": {"R": 0, "I": 0, "A": 0, "S": 0, "E": 0, "C": 0}, "answer_quality": "clear|vague|off_topic"}"""
+
+SYSTEM_PROMPT_SCORING = """You are an advanced career guidance analyzer. Analyze the entire conversation history below, normalize scores to 0-100 for the 6 RIASEC groups, and generate suggestions.
+- Based on the conversation history, calculate scores for R, I, A, S, E, C.
+- Determine top 2 or 3 groups as `riasec_code`.
+- Create a `reasoning` in Vietnamese explaining why you chose những nhóm này và bộc lộ tính cách như thế nào thông qua lịch sử hội thoại.
+- Suggest majors based on this list of 11 groups:
 {MAJORS_MAPPING}
 
-[HỘI THOẠI]
-{{conversation_history}}
+[CONVERSATION HISTORY]
+{conversation_history}
 
-JSON: {{"scores":{{"R":0.0,"I":0.0,"A":0.0,"S":0.0,"E":0.0,"C":0.0}},"riasec_code":"XYZ","top_groups":["X","Y"],"confidence":0.0,"reasoning":"...","description":"...","suggested_majors":[{{"group":"...","majors":["..."],"fit_reason":"..."}}]}}"""
+You must output a valid json object with the following exact keys and format:
+{
+  "scores": {
+    "R": 0.0,
+    "I": 0.0,
+    "A": 0.0,
+    "S": 0.0,
+    "E": 0.0,
+    "C": 0.0
+  },
+  "riasec_code": "XYZ",
+  "top_groups": ["X", "Y"],
+  "confidence": 0.0,
+  "reasoning": "Lý giải chi tiết bằng tiếng Việt...",
+  "suggested_majors": [
+    {
+      "group": "Tên nhóm ngành gợi ý...",
+      "majors": ["Ngành 1", "Ngành 2"],
+      "fit_reason": "Lý do phù hợp bằng tiếng Việt..."
+    }
+  ]
+}"""
 
 
 def _keyword_extract_signal(answer: str) -> dict:
@@ -157,7 +297,12 @@ async def generate_question(
 async def extract_signal(question: str, answer: str) -> dict:
     if not settings.GEMINI_API_KEY:
         return {"signals": _keyword_extract_signal(answer), "answer_quality": "clear"}
-    prompt = EXTRACT_SIGNAL_PROMPT.format(question=question, answer=answer)
+    
+    prompt = (
+        EXTRACT_SIGNAL_PROMPT
+        .replace("{question}", question)
+        .replace("{answer}", answer)
+    )
     try:
         model = genai.GenerativeModel(settings.GEMINI_MODEL, generation_config={"response_mime_type": "application/json"})
         response = await model.generate_content_async(prompt)
@@ -170,7 +315,12 @@ async def extract_signal(question: str, answer: str) -> dict:
 async def generate_final_scoring(history_text: str) -> dict:
     if not settings.GEMINI_API_KEY:
         return None
-    prompt = SYSTEM_PROMPT_SCORING.format(conversation_history=history_text)
+    
+    prompt = (
+        SYSTEM_PROMPT_SCORING
+        .replace("{MAJORS_MAPPING}", MAJORS_MAPPING)
+        .replace("{conversation_history}", history_text)
+    )
     try:
         model = genai.GenerativeModel(settings.GEMINI_MODEL, generation_config={"response_mime_type": "application/json"})
         response = await model.generate_content_async(prompt)

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -32,17 +31,13 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=LoginResponse)
 def login_for_access_token(
-    db: Session = Depends(get_db),
-    form_data: OAuth2PasswordRequestForm = Depends()
+    user_login: UserLogin,
+    db: Session = Depends(get_db)
 ):
     """
-    API Đăng nhập để lấy Access Token. 
-    Hỗ trợ form đăng nhập trực tiếp trên Swagger UI.
+    API Đăng nhập nhận JSON Body để lấy Access Token.
+    Thống nhất toàn bộ hệ thống sử dụng application/json.
     """
-    # Chuyển đổi dữ liệu từ form (username/password) sang schema UserLogin nội bộ
-    # Lưu ý: form_data.username ở đây chính là Email mà user nhập vào.
-    user_login = UserLogin(email=form_data.username, password=form_data.password)
-    
     # Xác thực thông tin người dùng
     user = user_service.authenticate_user(db, user_login)
     if not user:
@@ -55,11 +50,12 @@ def login_for_access_token(
     # Tạo JWT Token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES) if hasattr(settings, 'ACCESS_TOKEN_EXPIRE_MINUTES') else timedelta(minutes=60)
     access_token = create_access_token(
-        data={"sub": user.email}, 
+        data={"sub": user.email, "student_id": str(user.student_id)}, 
         expires_delta=access_token_expires
     )
     
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
 
 @router.post("/logout")
 def logout_user(current_user: User = Depends(get_current_user)):
@@ -119,3 +115,29 @@ def update_user_riasec_final(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"status": "success", "message": "Final scoring completed via internal API"}
+
+@router.get("/internal/users/{student_id}")
+def get_user_internal(
+    student_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    API nội bộ: Lấy thông tin RIASEC từ bảng users.
+    """
+    user = user_service.get_by_student_id(db, student_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "student_id": str(user.student_id),
+        "score_R": user.score_R,
+        "score_I": user.score_I,
+        "score_A": user.score_A,
+        "score_S": user.score_S,
+        "score_E": user.score_E,
+        "score_C": user.score_C,
+        "riasec_code": user.riasec_code,
+        "top_groups": user.top_groups,
+        "confidence": user.confidence,
+        "reasoning": user.reasoning,
+        "suggested_majors": user.suggested_majors
+    }

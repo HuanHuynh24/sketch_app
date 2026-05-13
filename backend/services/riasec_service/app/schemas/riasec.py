@@ -84,3 +84,22 @@ class ResultResponse(BaseModel):
     confidence: Optional[float] = None
     reasoning: Optional[str] = None
     suggested_majors: Optional[List[SuggestedMajor]] = None
+
+
+# ---------------------------------------------------------------------------
+# Schemas cho API đơn Unified Chat Flow (1-API Flow)
+# ---------------------------------------------------------------------------
+class UnifiedChatRequest(BaseModel):
+    student_id: Optional[str] = None
+    answer: Optional[str] = None
+
+
+
+class UnifiedChatResponse(BaseModel):
+    status: str            # "in_progress" | "completed"
+    session_id: str
+    question_no: int
+    message: str           # Câu hỏi tiếp theo hoặc lời chúc hoàn thành
+    confidence: float
+    scores: Dict[str, float]
+

@@ -28,8 +28,9 @@ def get_current_user_id(
         payload = jwt.decode(
             token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
         )
-        user_id = payload.get("sub") or payload.get("student_id")
+        user_id = payload.get("student_id") or payload.get("sub")
         if user_id is None:
+
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token không hợp lệ — thiếu thông tin user",

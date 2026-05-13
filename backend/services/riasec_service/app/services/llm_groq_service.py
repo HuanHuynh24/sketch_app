@@ -203,8 +203,7 @@ You must return a valid json object with the following schema:
 SYSTEM_PROMPT_SCORING = """You are an advanced career guidance analyzer. Analyze the entire conversation history below, normalize scores to 0-100 for the 6 RIASEC groups, and generate suggestions.
 - Based on the conversation history, calculate scores for R, I, A, S, E, C.
 - Determine top 2 or 3 groups as `riasec_code`.
-- Create a `reasoning` in Vietnamese explaining why you chose these groups.
-- Create a `description` in Vietnamese as a short summarizing comment about their traits.
+- Create a `reasoning` in Vietnamese explaining why you chose những nhóm này và bộc lộ tính cách như thế nào thông qua lịch sử hội thoại.
 - Suggest majors based on this list of 11 groups:
 {MAJORS_MAPPING}
 
@@ -225,7 +224,6 @@ You must output a valid json object with the following exact keys and format:
   "top_groups": ["X", "Y"],
   "confidence": 0.0,
   "reasoning": "Lý giải chi tiết bằng tiếng Việt...",
-  "description": "Nhận xét ngắn bằng tiếng Việt...",
   "suggested_majors": [
     {
       "group": "Tên nhóm ngành gợi ý...",
@@ -234,6 +232,7 @@ You must output a valid json object with the following exact keys and format:
     }
   ]
 }"""
+
 
 
 def _keyword_extract_signal(answer: str) -> dict:

@@ -38,4 +38,7 @@ class UserService:
             final_data=final_data
         )
 
+    def get_by_student_id(self, db: Session, student_id: str):
+        return user_repo.get_by_student_id(db, student_id)
+
 user_service = UserService()
