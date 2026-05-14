@@ -1,8 +1,36 @@
 from fastapi import FastAPI
-from app.api import health, predict_router
+
+from app.api import health
 from app.core.config import settings
+from app.core.database import init_schema
+
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
-app.include_router(health.router, tags=["Health Check"])
-app.include_router(predict_router.router, prefix="/api/admission", tags=["Prediction"]) # <-- Gắn router vào đây
+
+@app.on_event("startup")
+def on_startup():
+    init_schema()
+
+
+app.include_router(
+    health.router,
+    prefix=settings.API_PREFIX,
+    tags=["Health Check"],
+)
+
+
+@app.get("/")
+def root():
+    return {
+        "message": f"Welcome to {settings.PROJECT_NAME}",
+    }
+
+
+@app.get("/health")
+def root_health():
+    return {
+        "status": "ok",
+        "service": settings.PROJECT_NAME,
+        "schema": settings.DB_SCHEMA,
+    }

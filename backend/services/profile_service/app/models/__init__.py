@@ -1,3 +1,9 @@
-# Mọi Model bạn tạo sau này (ví dụ User, Score) đều phải import vào đây
 from .base import Base
-from .user import User
+from .student import Student
+from .student_academic_record import StudentAcademicRecord
+
+__all__ = [
+    "Base",
+    "Student",
+    "StudentAcademicRecord",
+]

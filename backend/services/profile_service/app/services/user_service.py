@@ -1,24 +1,69 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.repositories.user_repo import user_repo
-from app.schemas.user import UserCreate, UserLogin
-from app.core.security import get_password_hash, verify_password
 
-class UserService:
-    def create_user(self, db: Session, user_in: UserCreate):
-        existing_user = user_repo.get_by_email(db, email=user_in.email)
-        if existing_user:
-            return None 
+from app.core.security import create_access_token, verify_password
+from app.repositories.student_repository import StudentRepository
+from app.schemas.auth import AuthResponse, LoginRequest
+from app.schemas.student import StudentRegisterRequest
 
-        # Dùng hàm mã hóa xịn từ passlib
-        hashed_pw = get_password_hash(user_in.password)
-        return user_repo.create(db, user_in, hashed_password=hashed_pw)
 
-    def authenticate_user(self, db: Session, user_login: UserLogin):
-        user = user_repo.get_by_email(db, email=user_login.email)
-        if not user:
-            return None
-        if not verify_password(user_login.password, user.hashed_password):
-            return None
-        return user
+ACCESS_TOKEN_EXPIRE_SECONDS = 3600
 
-user_service = UserService()
+
+class AuthService:
+    def __init__(self, db: Session):
+        self.student_repo = StudentRepository(db)
+
+    def register(self, payload: StudentRegisterRequest) -> AuthResponse:
+        existing_student = self.student_repo.get_by_email(payload.email)
+
+        if existing_student:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already exists",
+            )
+
+        student = self.student_repo.create(payload)
+
+        access_token = create_access_token(
+            subject=str(student.student_id),
+            expires_seconds=ACCESS_TOKEN_EXPIRE_SECONDS,
+        )
+
+        return AuthResponse(
+            access_token=access_token,
+            expires_in=ACCESS_TOKEN_EXPIRE_SECONDS,
+            student=student,
+        )
+
+    def login(self, payload: LoginRequest) -> AuthResponse:
+        student = self.student_repo.get_by_email(payload.email)
+
+        if not student:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+
+        if not verify_password(payload.password, student.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+
+        if not student.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is inactive",
+            )
+
+        access_token = create_access_token(
+            subject=str(student.student_id),
+            expires_seconds=ACCESS_TOKEN_EXPIRE_SECONDS,
+        )
+
+        return AuthResponse(
+            access_token=access_token,
+            expires_in=ACCESS_TOKEN_EXPIRE_SECONDS,
+            student=student,
+        )

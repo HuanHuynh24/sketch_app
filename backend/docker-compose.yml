@@ -1,5 +1,4 @@
 services:
-  # 1. Database
   postgres_db:
     image: postgres:16-alpine
     container_name: ms_postgres
@@ -10,84 +9,96 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # 2. Profile Service
   profile_service:
     build: ./services/profile_service
     container_name: ms_profile_service
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=Profile Service
+      - API_PREFIX=/api/profile
+      - DB_SCHEMA=profile
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
       - PYTHONDONTWRITEBYTECODE=1
     ports:
-      - "8001:8000"  # <-- MỞ CỔNG 8001
+      - "8001:8000"
     volumes:
       - ./services/profile_service:/app
     depends_on:
       - postgres_db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # 3. RIASEC Service
   riasec_service:
     build: ./services/riasec_service
     container_name: ms_riasec_service
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=RIASEC Service
+      - API_PREFIX=/api/riasec
+      - DB_SCHEMA=riasec
+      - PROFILE_SERVICE_URL=http://ms_profile_service:8000
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
       - PYTHONDONTWRITEBYTECODE=1
     ports:
-      - "8002:8000"  # <-- MỞ CỔNG 8002
+      - "8002:8000"
     volumes:
       - ./services/riasec_service:/app
     depends_on:
       - postgres_db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # 4. Admission Service
   admission_service:
     build: ./services/admission_service
     container_name: ms_admission_service
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=Admission Service
+      - API_PREFIX=/api/admission
+      - DB_SCHEMA=admission
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
       - PYTHONDONTWRITEBYTECODE=1
     ports:
-      - "8003:8000"  # <-- MỞ CỔNG 8003
+      - "8003:8000"
     volumes:
       - ./services/admission_service:/app
     depends_on:
       - postgres_db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # 5. RAG Service
   rag_service:
     build: ./services/rag_service
     container_name: ms_rag_service
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=RAG Service
+      - API_PREFIX=/api/rag
+      - DB_SCHEMA=rag
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
       - PYTHONDONTWRITEBYTECODE=1
     ports:
-      - "8004:8000"  # <-- MỞ CỔNG 8004
+      - "8004:8000"
     volumes:
       - ./services/rag_service:/app
     depends_on:
       - postgres_db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # 6. API Gateway
   api_gateway:
     build: ./api_gateway
     container_name: ms_api_gateway
     restart: always
     env_file: .env
     environment:
+      - PROFILE_SERVICE_URL=http://ms_profile_service:8000
+      - RIASEC_SERVICE_URL=http://ms_riasec_service:8000
+      - ADMISSION_SERVICE_URL=http://ms_admission_service:8000
+      - RAG_SERVICE_URL=http://ms_rag_service:8000
       - PYTHONDONTWRITEBYTECODE=1
     ports:
-      - "8000:8000"  # <-- Cổng chính 8000 (Dành cho Frontend gọi)
+      - "8000:8000"
     volumes:
       - ./api_gateway:/app
     depends_on:

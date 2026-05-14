@@ -1,29 +1,62 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# https://help.github.com/articles/ignoring-files/
 
-# --- DATABASE & DOCKER SPECIFIC ---
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- IDE / tooling local ---
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Cursor / AI local (optional; remove if team commits these) ---
+.cursor/
+.claude/
+.claude_code/
+
+# --- Secrets & env (keep examples) ---
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+!.env.example
+!**/.env.example
+
+# --- Database & Docker volumes (local) ---
 postgres_data/
 ms_postgres_data/
 .db-data/
 *.log
 
-# --- AI TOOLING (CURSOR & CLAUDE) ---
-.cursor/
-.claude/
-.claude_code/
+# --- Python (monorepo: any service / gateway) ---
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+**/.Python
+**/venv/
+**/.venv/
+**/ENV/
+**/env/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/*.egg-info/
+**/dist/
+**/.eggs/
+**/.coverage
+**/htmlcov/
+**/.tox/
 
-# --- PYTHON EXTENSIONS ---
-.env
-.env.local
-backend/**/.env
-backend/**/__pycache__/
-
-# --- OS SPECIFIC ---
-.DS_Store
-Thumbs.db
-
-# dependencies
-/node_modules
-/.pnp
+# --- Node / frontend (paths work from repo root) ---
+node_modules/
+**/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -31,32 +64,18 @@ Thumbs.db
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# --- Testing / coverage ---
+coverage/
+**/coverage/
+.nyc_output/
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
+# --- Next.js / misc frontend ---
+.vercel
 *.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# --- TypeScript ---
 *.tsbuildinfo
-next-env.d.ts
