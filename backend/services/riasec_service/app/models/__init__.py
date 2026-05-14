@@ -1,4 +1,13 @@
-# Mọi Model bạn tạo sau này (ví dụ User, Score) đều phải import vào đây
-from .base import Base
+from app.models.base import Base
+from app.models.riasec_session import RiasecSession
+from app.models.conversation_message import ConversationMessage
+from app.models.riasec_score_snapshot import RiasecScoreSnapshot
+from app.models.digital_competency_profile import DigitalCompetencyProfile
 
-# Ví dụ sau này: from .user import User
+__all__ = [
+    "Base",
+    "RiasecSession",
+    "ConversationMessage",
+    "RiasecScoreSnapshot",
+    "DigitalCompetencyProfile",
+]

@@ -1,20 +1,12 @@
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool, text
 
-from alembic import context
-
 from app.core.config import settings
-from app.models.base import Base
-
-# Import models của service tại đây sau khi tạo model.
-# Ví dụ:
-# from app.models.user import User
-# from app.models.question import Question
-
+from app.models import Base
 
 config = context.config
-
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
@@ -23,9 +15,13 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
-def include_object(object, name, type_, reflected, compare_to):
+def include_name(name, type_, parent_names):
+    if type_ == "schema":
+        return name == settings.DB_SCHEMA
+
     if type_ == "table":
-        return object.schema == settings.DB_SCHEMA
+        return parent_names.get("schema_name") == settings.DB_SCHEMA
+
     return True
 
 
@@ -34,12 +30,10 @@ def run_migrations_offline():
         url=settings.DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
         include_schemas=True,
-        version_table=f"alembic_version_{settings.DB_SCHEMA}",
+        include_name=include_name,
+        version_table="alembic_version_riasec",
         version_table_schema=settings.DB_SCHEMA,
-        include_object=include_object,
-        compare_type=True,
     )
 
     with context.begin_transaction():
@@ -47,29 +41,23 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
-
     connectable = engine_from_config(
-        configuration,
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        connection.execute(
-            text(f'CREATE SCHEMA IF NOT EXISTS "{settings.DB_SCHEMA}"')
-        )
+        connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {settings.DB_SCHEMA}"))
         connection.commit()
 
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             include_schemas=True,
-            version_table=f"alembic_version_{settings.DB_SCHEMA}",
+            include_name=include_name,
+            version_table="alembic_version_riasec",
             version_table_schema=settings.DB_SCHEMA,
-            include_object=include_object,
-            compare_type=True,
         )
 
         with context.begin_transaction():

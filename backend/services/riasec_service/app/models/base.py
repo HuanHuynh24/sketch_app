@@ -1,12 +1,5 @@
-from sqlalchemy.orm import declarative_base
-
-from app.core.config import settings
+from sqlalchemy.orm import DeclarativeBase
 
 
-Base = declarative_base()
-
-
-class SchemaMixin:
-    __table_args__ = {
-        "schema": settings.DB_SCHEMA,
-    }
+class Base(DeclarativeBase):
+    pass
