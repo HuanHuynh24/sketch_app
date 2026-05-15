@@ -1,16 +1,41 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Mail, Lock, HelpCircle, ArrowRight } from "lucide-react";
+import { ApiError, loginStudent, saveAuthSession } from "@/lib/api";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert(`Logging in with: ${email}`);
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await loginStudent({
+        email: email.trim(),
+        password,
+      });
+
+      saveAuthSession(response);
+      router.push("/chat");
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Không thể đăng nhập lúc này. Vui lòng thử lại.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -30,6 +55,7 @@ export default function LoginForm() {
           placeholder="your-sketch@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={isSubmitting}
           required
           className="bg-transparent border-0 border-b-[3px] border-sketch-ink px-0 py-3 text-lg outline-none focus:border-sketch-blue transition-colors duration-150 placeholder:text-sketch-muted placeholder:italic"
           style={{ fontFamily: "var(--font-body)" }}
@@ -51,6 +77,7 @@ export default function LoginForm() {
           placeholder="your secret doodle..."
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={isSubmitting}
           required
           className="bg-transparent border-0 border-b-[3px] border-sketch-ink px-0 py-3 text-lg outline-none focus:border-sketch-blue transition-colors duration-150 placeholder:text-sketch-muted placeholder:italic"
           style={{ fontFamily: "var(--font-body)" }}
@@ -67,14 +94,25 @@ export default function LoginForm() {
         </Link>
       </div>
 
+      {error && (
+        <p
+          role="alert"
+          className="border-[2px] border-sketch-error bg-red-50 px-4 py-2 text-sketch-error"
+        >
+          {error}
+        </p>
+      )}
+
       {/* Submit */}
       <button
         type="submit"
         id="login-submit-btn"
-        className="w-full inline-flex items-center justify-center gap-2 py-3 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
+        disabled={isSubmitting}
+        aria-busy={isSubmitting}
+        className="w-full inline-flex items-center justify-center gap-2 py-3 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
         style={{ fontFamily: "var(--font-heading)" }}
       >
-        <ArrowRight size={18} /> Click Here!
+        <ArrowRight size={18} /> {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
       </button>
     </form>
   );

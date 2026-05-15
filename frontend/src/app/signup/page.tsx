@@ -16,7 +16,7 @@ export default function SignUpPage() {
       <div className="min-h-[calc(100vh-73px)] flex items-center justify-center px-6 py-12">
         <div
           id="signup-card"
-          className="relative w-full max-w-md bg-sketch-surface border-[3px] border-sketch-ink wobbly shadow-sketch-lg px-10 py-12 rotate-[0.5deg] pinned"
+          className="relative w-full max-w-xl bg-sketch-surface border-[3px] border-sketch-ink wobbly shadow-sketch-lg px-10 py-12 rotate-[0.5deg] pinned"
         >
           <h1 className="text-center text-sketch-red mb-1" style={{ fontFamily: "var(--font-heading)" }}>
             Join the Sketchbook
