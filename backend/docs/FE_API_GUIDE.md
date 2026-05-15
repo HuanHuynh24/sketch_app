@@ -1,191 +1,216 @@
 # FE API Guide
 
-Tài liệu này mô tả các API FE cần dùng để tích hợp luồng đăng ký học sinh và bài đánh giá RIASEC.
+Tài liệu này mô tả cách Frontend gọi Backend qua API Gateway.
 
-## 1. Base URL
-
-Khi gọi trực tiếp từng service local:
+Frontend không gọi trực tiếp `profile_service`, `riasec_service`, `admission_service` hoặc `rag_service`. Trong môi trường dev, FE chỉ cần gọi một base URL:
 
 ```txt
-Profile Service: http://localhost:8001/api/profile
-RIASEC Service : http://localhost:8002/api/riasec
-
-Nếu FE gọi qua API Gateway, base URL có thể là:
-
 http://localhost:8000
+```
 
-Trong giai đoạn dev hiện tại, FE có thể gọi trực tiếp từng service.
+## 1. Cấu hình môi trường FE
 
-Ví dụ .env phía FE:
+Với Next.js, tạo file `frontend/.env.local`:
 
-VITE_PROFILE_API_URL=http://localhost:8001/api/profile
-VITE_RIASEC_API_URL=http://localhost:8002/api/riasec
-2. Luồng chức năng tổng quan
-1. User đăng ký hoặc đăng nhập.
-2. FE lưu access_token và student_id.
-3. User bấm "Bắt đầu bài test RIASEC".
-4. FE gọi API tạo RIASEC session.
-5. FE hiển thị câu hỏi đầu tiên.
-6. User nhập câu trả lời.
-7. FE gửi câu trả lời lên BE.
-8. Nếu BE trả answer_warning:
-   - FE hiển thị cảnh báo.
-   - Không chuyển câu mới.
-   - Cho user trả lời lại.
-9. Nếu BE trả adaptive_scenario:
-   - FE hiển thị câu hỏi tiếp theo.
-10. Nếu BE trả completed:
-   - FE lấy dcp_id.
-   - FE gọi API lấy kết quả cuối.
-   - FE chuyển sang màn kết quả.
-3. API đăng ký học sinh
-Mục đích
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
 
-Tạo tài khoản học sinh mới và nhận về token cùng thông tin học sinh.
+Trong code FE:
 
-Endpoint
-POST /auth/register
+```ts
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+```
 
-Full URL:
+## 2. Quy tắc gọi API
 
-http://localhost:8001/api/profile/auth/register
-Request body
+Tất cả endpoint bên dưới đều đi qua API Gateway:
+
+```txt
+Profile: /api/profile/...
+RIASEC : /api/riasec/...
+```
+
+Các API cần đăng nhập phải gửi header:
+
+```txt
+Authorization: Bearer ACCESS_TOKEN
+```
+
+FE nên lưu:
+
+```ts
+localStorage.setItem("access_token", data.access_token);
+localStorage.setItem("student", JSON.stringify(data.student));
+```
+
+Không cần lưu `student_id` để gửi cho RIASEC nữa. RIASEC sẽ tự lấy học sinh hiện tại từ token thông qua Profile Service.
+
+## 3. API client gợi ý
+
+```ts
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+type ApiOptions = RequestInit & {
+  auth?: boolean;
+};
+
+export async function apiFetch<T>(
+  path: string,
+  options: ApiOptions = {}
+): Promise<T> {
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
+
+  if (options.auth) {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!res.ok) {
+    let message = "Request failed";
+
+    try {
+      const error = await res.json();
+      message = error.detail ?? message;
+    } catch {
+      message = await res.text();
+    }
+
+    throw new Error(message);
+  }
+
+  return res.json();
+}
+```
+
+## 4. Auth APIs
+
+### Đăng ký học sinh
+
+```txt
+POST /api/profile/auth/register
+```
+
+Request:
+
+```json
 {
   "full_name": "Nguyen Van Test",
   "email": "test_riasec@example.com",
   "password": "123456",
-  "province": "Khánh Hòa",
+  "province": "Khanh Hoa",
   "area_code": "KV2",
   "dob": "2007-05-20",
   "priority_group": "01",
   "target_province": "TP.HCM"
 }
-Giải thích input
-Field	Type	Required	Mô tả
-full_name	string	Yes	Họ tên học sinh
-email	string	Yes	Email đăng nhập
-password	string	Yes	Mật khẩu
-province	string	No	Tỉnh/thành hiện tại
-area_code	string	No	Khu vực ưu tiên
-dob	string	No	Ngày sinh, format YYYY-MM-DD
-priority_group	string	No	Nhóm ưu tiên
-target_province	string	No	Tỉnh/thành mong muốn học
-Response thành công
+```
+
+Response:
+
+```json
 {
   "access_token": "jwt_token",
   "token_type": "bearer",
+  "expires_in": 3600,
   "student": {
     "student_id": "uuid",
     "full_name": "Nguyen Van Test",
-    "email": "test_riasec@example.com"
+    "email": "test_riasec@example.com",
+    "province": "Khanh Hoa",
+    "area_code": "KV2"
   }
 }
-FE cần lưu
-localStorage.setItem("access_token", response.access_token);
-localStorage.setItem("student_id", response.student.student_id);
-Lỗi thường gặp
-Email đã tồn tại
+```
 
-BE có thể trả lỗi 400.
+FE xử lý:
 
-FE nên hiển thị:
+```ts
+export async function registerStudent(payload: RegisterPayload) {
+  const data = await apiFetch<AuthResponse>("/api/profile/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 
-Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.
-4. API đăng nhập học sinh
-Mục đích
+  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("student", JSON.stringify(data.student));
 
-Đăng nhập tài khoản đã có.
+  return data;
+}
+```
 
-Endpoint
-POST /auth/login
+### Đăng nhập
 
-Full URL:
+```txt
+POST /api/profile/auth/login
+```
 
-http://localhost:8001/api/profile/auth/login
-Request body
+Request:
 
-Tùy implementation hiện tại của profile_service. Nếu login dùng JSON:
-
+```json
 {
   "email": "test_riasec@example.com",
   "password": "123456"
 }
+```
 
-Nếu login dùng OAuth2 form, FE cần gửi dạng form-data hoặc x-www-form-urlencoded.
+FE xử lý giống đăng ký: lưu `access_token` và `student`.
 
-Response thành công
-{
-  "access_token": "jwt_token",
-  "token_type": "bearer",
-  "student": {
-    "student_id": "uuid",
-    "email": "test_riasec@example.com"
-  }
-}
-FE cần lưu
-localStorage.setItem("access_token", response.access_token);
-localStorage.setItem("student_id", response.student.student_id);
-5. API lấy thông tin học sinh hiện tại
-Mục đích
+### Lấy thông tin học sinh hiện tại
 
-Kiểm tra token và lấy thông tin học sinh đang đăng nhập.
-
-Endpoint
-GET /auth/me
-
-Full URL:
-
-http://localhost:8001/api/profile/auth/me
-Headers
+```txt
+GET /api/profile/auth/me
 Authorization: Bearer ACCESS_TOKEN
-Response thành công
-{
-  "student_id": "uuid",
-  "full_name": "Nguyen Van Test",
-  "email": "test_riasec@example.com",
-  "province": "Khánh Hòa",
-  "area_code": "KV2",
-  "dob": "2007-05-20",
-  "priority_group": "01",
-  "target_province": "TP.HCM"
+```
+
+FE dùng API này để kiểm tra trạng thái đăng nhập khi reload trang.
+
+Nếu API trả `401`, FE nên xóa token và chuyển về màn đăng nhập.
+
+```ts
+export async function getMe() {
+  return apiFetch<Student>("/api/profile/auth/me", {
+    method: "GET",
+    auth: true,
+  });
 }
-FE xử lý
-Nếu thành công: user vẫn đăng nhập.
-Nếu lỗi 401: xóa token và chuyển về màn login.
-if (error.response?.status === 401) {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("student_id");
-}
-6. API tạo RIASEC session
-Mục đích
+```
 
-Khởi tạo một phiên làm bài test RIASEC cho học sinh.
+## 5. RIASEC APIs
 
-API này sẽ:
+Các API RIASEC đều đi qua Gateway và dùng token từ Profile Service.
 
-Tạo session_id.
-Sinh câu hỏi đầu tiên dạng anchor_scenario.
-Khởi tạo điểm RIASEC ban đầu.
-Endpoint
-POST /sessions
+### Tạo phiên RIASEC
 
-Full URL:
+```txt
+POST /api/riasec/sessions
+Authorization: Bearer ACCESS_TOKEN
+```
 
-http://localhost:8002/api/riasec/sessions
-Request body
-{
-  "student_id": "uuid"
-}
-Giải thích input
-Field	Type	Required	Mô tả
-student_id	UUID	Yes	ID học sinh lấy từ Profile Service
-Response thành công
+Không gửi body.
+
+Response:
+
+```json
 {
   "session": {
     "session_id": "uuid",
     "student_id": "uuid",
     "status": "in_progress",
     "current_step": 0,
+    "min_steps": 5,
+    "max_steps": 7,
     "scores": {
       "R": 0,
       "I": 0,
@@ -209,73 +234,81 @@ Response thành công
     "session_id": "uuid",
     "role": "assistant",
     "message_type": "anchor_scenario",
-    "content": "Trường bạn tổ chức một dự án...",
+    "content": "Câu hỏi tình huống đầu tiên...",
     "metadata_json": {
       "type": "anchor_scenario",
       "focus_groups": ["R", "I", "A", "S", "E", "C"],
       "context": "anchor",
       "question_style": "role_choice"
     },
-    "created_at": "2026-05-14T..."
+    "created_at": "2026-05-15T..."
   }
 }
-FE cần lưu
-setSessionId(response.session.session_id);
-setCurrentQuestion(response.question.content);
-setCurrentStep(response.session.current_step);
-Lỗi thường gặp
-student_id không tồn tại
+```
 
-Có thể trả 404 hoặc 400.
+FE xử lý:
 
-FE nên xử lý:
-
-Không tìm thấy thông tin học sinh. Vui lòng đăng nhập lại.
-7. API gửi câu trả lời RIASEC
-Mục đích
-
-Gửi câu trả lời của học sinh cho câu hỏi hiện tại.
-
-BE sẽ:
-
-Kiểm tra câu trả lời có nghiêm túc không.
-Nếu không hợp lệ: trả cảnh báo, không tăng step.
-Nếu hợp lệ:
-Chấm điểm RIASEC.
-Cập nhật score/confidence.
-Sinh câu hỏi tiếp theo.
-Hoặc hoàn tất nếu đủ điều kiện.
-Endpoint
-POST /sessions/{session_id}/answers
-
-Full URL:
-
-http://localhost:8002/api/riasec/sessions/{session_id}/answers
-Path params
-Param	Type	Required	Mô tả
-session_id	UUID	Yes	ID phiên RIASEC
-Request body
-{
-  "answer_text": "Em thích phân tích dữ liệu, tìm ra xu hướng và đề xuất giải pháp phù hợp."
+```ts
+export async function startRiasecSession() {
+  return apiFetch<StartRiasecResponse>("/api/riasec/sessions", {
+    method: "POST",
+    auth: true,
+  });
 }
-Giải thích input
-Field	Type	Required	Mô tả
-answer_text	string	Yes	Câu trả lời tự nhiên của học sinh
-Case 1: Câu trả lời không hợp lệ
+```
 
-Ví dụ gửi:
+Lưu trong state:
 
+```ts
+setSessionId(data.session.session_id);
+setCurrentQuestion(data.question.content);
+setCurrentStep(data.session.current_step);
+```
+
+### Gửi câu trả lời
+
+```txt
+POST /api/riasec/sessions/{session_id}/answers
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Request:
+
+```json
 {
-  "answer_text": "abc"
+  "answer_text": "Em thích phân tích dữ liệu, tìm xu hướng và đề xuất giải pháp phù hợp."
 }
+```
 
-Response:
+Response khi tiếp tục:
 
+```json
 {
   "status": "in_progress",
   "session": {
     "session_id": "uuid",
     "status": "in_progress",
+    "current_step": 2,
+    "riasec_code": "IAC"
+  },
+  "user_message": {
+    "message_type": "answer",
+    "content": "..."
+  },
+  "assistant_message": {
+    "message_type": "adaptive_scenario",
+    "content": "Câu hỏi tiếp theo..."
+  },
+  "dcp_id": null
+}
+```
+
+Response khi câu trả lời không hợp lệ:
+
+```json
+{
+  "status": "in_progress",
+  "session": {
     "current_step": 1
   },
   "user_message": {
@@ -284,89 +317,24 @@ Response:
   },
   "assistant_message": {
     "message_type": "answer_warning",
-    "content": "Câu trả lời của bạn quá ngắn nên hệ thống chưa thể đánh giá. Hãy nói rõ bạn sẽ chọn hướng nào và vì sao.",
-    "metadata_json": {
-      "reason": "Câu trả lời quá ngắn để đánh giá.",
-      "repeat_question": "..."
-    }
+    "content": "Câu trả lời của bạn quá ngắn..."
   },
   "dcp_id": null
 }
-FE xử lý khi answer_warning
+```
 
-Nếu:
+FE xử lý warning:
 
-response.assistant_message.message_type === "answer_warning"
-
-Thì FE cần:
-
-Hiển thị warning.
-Không đổi câu hỏi.
-Không tăng progress UI.
-Giữ nguyên textarea hoặc cho user nhập lại.
-Cho user gửi lại câu trả lời đúng trọng tâm hơn.
-
-Ví dụ:
-
+```ts
 if (data.assistant_message?.message_type === "answer_warning") {
   setWarning(data.assistant_message.content);
   return;
 }
-Case 2: Câu trả lời hợp lệ và bài test tiếp tục
+```
 
-Response:
+Response khi hoàn tất:
 
-{
-  "status": "in_progress",
-  "session": {
-    "session_id": "uuid",
-    "student_id": "uuid",
-    "status": "in_progress",
-    "current_step": 2,
-    "scores": {
-      "R": 0.5,
-      "I": 2,
-      "A": 1,
-      "S": 0,
-      "E": 0,
-      "C": 0.5
-    },
-    "confidence": {
-      "R": 0.2,
-      "I": 0.8,
-      "A": 0.4,
-      "S": 0,
-      "E": 0,
-      "C": 0.2
-    },
-    "riasec_code": "IAC"
-  },
-  "user_message": {
-    "message_type": "answer",
-    "content": "Em thích phân tích dữ liệu..."
-  },
-  "assistant_message": {
-    "message_type": "adaptive_scenario",
-    "content": "Một CLB cần mở rộng thành viên nhưng nguồn lực hạn chế...",
-    "metadata_json": {
-      "type": "adaptive_scenario",
-      "focus_groups": ["I", "A"],
-      "context": "hoạt động CLB học thuật",
-      "question_style": "resource_constraint"
-    }
-  },
-  "dcp_id": null
-}
-FE xử lý khi tiếp tục
-Clear warning.
-Clear textarea.
-Update current_step.
-Update scores.
-Hiển thị assistant_message.content làm câu hỏi tiếp theo.
-Case 3: Bài test hoàn tất
-
-Sau tối đa 7 câu trả lời hợp lệ hoặc khi đủ độ tin cậy, response:
-
+```json
 {
   "status": "completed",
   "session": {
@@ -376,36 +344,44 @@ Sau tối đa 7 câu trả lời hợp lệ hoặc khi đủ độ tin cậy, re
     "riasec_code": "IAC",
     "termination_reason": "Reached maximum number of questions"
   },
-  "user_message": {
-    "message_type": "answer",
-    "content": "..."
-  },
   "assistant_message": {
     "message_type": "final_result",
-    "content": "Bài đánh giá đã hoàn tất. Mã RIASEC của bạn là IAC..."
+    "content": "Bài đánh giá đã hoàn tất..."
   },
   "dcp_id": "uuid"
 }
-FE xử lý khi completed
-Lưu dcp_id.
-Chuyển sang màn kết quả.
-Gọi API lấy chi tiết profile:
-GET /profiles/{dcp_id}
-8. API lấy kết quả RIASEC profile
-Mục đích
+```
 
-Lấy kết quả cuối cùng của bài đánh giá.
+FE xử lý:
 
-Endpoint
-GET /profiles/{dcp_id}
+```ts
+export async function submitRiasecAnswer(
+  sessionId: string,
+  answerText: string
+) {
+  return apiFetch<SubmitAnswerResponse>(
+    `/api/riasec/sessions/${sessionId}/answers`,
+    {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ answer_text: answerText }),
+    }
+  );
+}
+```
 
-Full URL:
+Nếu `status === "completed"`, FE lưu `dcp_id` và chuyển sang màn kết quả.
 
-http://localhost:8002/api/riasec/profiles/{dcp_id}
-Path params
-Param	Type	Required	Mô tả
-dcp_id	UUID	Yes	ID kết quả cuối từ response completed
-Response thành công
+### Lấy kết quả RIASEC
+
+```txt
+GET /api/riasec/profiles/{dcp_id}
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Response:
+
+```json
 {
   "dcp_id": "uuid",
   "student_id": "uuid",
@@ -427,60 +403,75 @@ Response thành công
     "E": 0.3,
     "C": 0.6
   },
-  "career_groups": [
-    "Công nghệ thông tin",
-    "Khoa học dữ liệu",
-    "AI",
-    "Thiết kế",
-    "Truyền thông"
-  ],
+  "career_groups": ["Công nghệ thông tin", "Khoa học dữ liệu"],
   "digital_competencies": {
-    "I": [
-      "Phân tích dữ liệu",
-      "Tư duy logic",
-      "Tìm kiếm và đánh giá thông tin"
-    ],
-    "A": [
-      "Sáng tạo nội dung số",
-      "Thiết kế trải nghiệm"
-    ],
-    "C": [
-      "Quản lý dữ liệu",
-      "Tự động hóa quy trình"
-    ]
+    "I": ["Phân tích dữ liệu", "Tư duy logic"]
   },
-  "recommended_majors": [
-    "Công nghệ thông tin",
-    "Khoa học dữ liệu",
-    "Trí tuệ nhân tạo",
-    "Thiết kế UX/UI",
-    "Hệ thống thông tin"
-  ],
-  "summary": "Kết quả hiện tại cho thấy bạn nổi bật ở nhóm IAC..."
+  "recommended_majors": ["Công nghệ thông tin", "Khoa học dữ liệu"],
+  "summary": "Kết quả hiện tại cho thấy..."
 }
-FE nên hiển thị
-Mã RIASEC.
-Biểu đồ điểm R, I, A, S, E, C.
-Summary.
-Nhóm ngành phù hợp.
-Ngành học gợi ý.
-Năng lực số nên phát triển.
-9. TypeScript types gợi ý
+```
+
+FE xử lý:
+
+```ts
+export async function getRiasecProfile(dcpId: string) {
+  return apiFetch<DigitalCompetencyProfile>(
+    `/api/riasec/profiles/${dcpId}`,
+    {
+      method: "GET",
+      auth: true,
+    }
+  );
+}
+```
+
+## 6. TypeScript types gợi ý
+
+```ts
 export type RiasecGroup = "R" | "I" | "A" | "S" | "E" | "C";
-
 export type RiasecScore = Record<RiasecGroup, number>;
+export type RiasecStatus = "in_progress" | "completed";
 
-export type RiasecStatus = "in_progress" | "completed" | "abandoned";
+export interface Student {
+  student_id: string;
+  full_name: string;
+  email: string;
+  dob?: string | null;
+  province: string;
+  area_code: string;
+  priority_group?: string | null;
+  target_province?: string | null;
+  is_active: boolean;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
+  student: Student;
+}
 
 export interface RiasecSession {
   session_id: string;
   student_id: string;
   status: RiasecStatus;
   current_step: number;
+  min_steps: number;
+  max_steps: number;
   scores: RiasecScore;
   confidence: RiasecScore;
+  entropy: number;
+  current_focus_groups: RiasecGroup[];
   riasec_code?: string | null;
   termination_reason?: string | null;
+  final_summary?: string | null;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
 }
 
 export interface RiasecMessage {
@@ -495,15 +486,7 @@ export interface RiasecMessage {
     | "invalid_answer"
     | "answer_warning"
     | "final_result";
-  metadata_json?: {
-    type?: string;
-    focus_groups?: RiasecGroup[];
-    context?: string;
-    question_style?: string;
-    reason?: string;
-    repeat_question?: string;
-    [key: string]: unknown;
-  };
+  metadata_json?: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -533,144 +516,95 @@ export interface DigitalCompetencyProfile {
   summary: string;
   created_at: string;
 }
-10. Axios service gợi ý
-import axios from "axios";
+```
 
-export const profileApi = axios.create({
-  baseURL: import.meta.env.VITE_PROFILE_API_URL,
-});
+## 7. UI behavior bắt buộc
 
-export const riasecApi = axios.create({
-  baseURL: import.meta.env.VITE_RIASEC_API_URL,
-});
+Khi bắt đầu test:
 
-export async function registerStudent(payload: {
-  full_name: string;
-  email: string;
-  password: string;
-  province?: string;
-  area_code?: string;
-  dob?: string;
-  priority_group?: string;
-  target_province?: string;
-}) {
-  const res = await profileApi.post("/auth/register", payload);
-  return res.data;
-}
+1. Kiểm tra token có tồn tại.
+2. Gọi `POST /api/riasec/sessions`.
+3. Hiển thị `response.question.content`.
 
-export async function getMe() {
-  const token = localStorage.getItem("access_token");
+Khi gửi câu trả lời:
 
-  const res = await profileApi.get("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+1. Gọi `POST /api/riasec/sessions/{session_id}/answers`.
+2. Nếu `assistant_message.message_type === "answer_warning"`:
+   - Hiển thị cảnh báo.
+   - Không tăng progress.
+   - Không đổi câu hỏi.
+3. Nếu `status === "in_progress"`:
+   - Clear warning.
+   - Clear textarea.
+   - Hiển thị `assistant_message.content`.
+   - Cập nhật `current_step`, `scores`, `confidence`.
+4. Nếu `status === "completed"`:
+   - Lưu `dcp_id`.
+   - Chuyển sang màn kết quả.
+   - Gọi `GET /api/riasec/profiles/{dcp_id}`.
 
-  return res.data;
-}
+Progress:
 
-export async function startRiasecSession(studentId: string) {
-  const res = await riasecApi.post("/sessions", {
-    student_id: studentId,
-  });
+```ts
+const displayStep = Math.min(session.current_step + 1, session.max_steps);
+```
 
-  return res.data;
-}
+Lưu ý: `current_step` là số câu trả lời hợp lệ đã được chấm. Khi user trả lời sai/lạc đề, `current_step` không tăng.
 
-export async function submitRiasecAnswer(
-  sessionId: string,
-  answerText: string
-) {
-  const res = await riasecApi.post(`/sessions/${sessionId}/answers`, {
-    answer_text: answerText,
-  });
+## 8. Error handling
 
-  return res.data;
-}
+FE nên xử lý các lỗi chính:
 
-export async function getRiasecProfile(dcpId: string) {
-  const res = await riasecApi.get(`/profiles/${dcpId}`);
-  return res.data;
-}
-11. UI behavior bắt buộc
-Khi bắt đầu test
+```txt
+400: dữ liệu gửi lên không hợp lệ
+401: token sai hoặc hết hạn
+403: không có quyền truy cập session/profile
+404: không tìm thấy resource
+502: Gateway hoặc RIASEC không gọi được Profile Service
+504: service timeout
+```
 
-FE gọi:
+Gợi ý xử lý `401`:
 
-startRiasecSession(studentId)
+```ts
+localStorage.removeItem("access_token");
+localStorage.removeItem("student");
+router.push("/login");
+```
 
-Sau đó hiển thị:
+## 9. Các API FE không nên dùng
 
-response.question.content
-Khi gửi câu trả lời
+Không gọi trực tiếp:
 
-FE gọi:
+```txt
+http://localhost:8001
+http://localhost:8002
+http://localhost:8003
+http://localhost:8004
+```
 
-submitRiasecAnswer(sessionId, answerText)
+Không gửi `student_id` khi tạo RIASEC session:
 
-Nếu response là warning:
+```txt
+POST /api/riasec/sessions
+```
 
-if (data.assistant_message?.message_type === "answer_warning") {
-  setWarning(data.assistant_message.content);
-  return;
-}
+API này đã lấy học sinh hiện tại từ `Authorization` token.
 
-Nếu tiếp tục:
+Không dùng các API RIASEC cũ:
 
-setQuestion(data.assistant_message.content);
-setStep(data.session.current_step);
+```txt
+GET /api/riasec/sessions/{session_id}
+PATCH /api/riasec/sessions/{session_id}/abandon
+```
 
-Nếu completed:
+Flow FE chính chỉ cần:
 
-setDcpId(data.dcp_id);
-navigate(`/riasec/result/${data.dcp_id}`);
-Khi xem kết quả
-
-FE gọi:
-
-getRiasecProfile(dcpId)
-
-Render:
-
-riasec_code
-scores
-confidence
-career_groups
-recommended_majors
-digital_competencies
-summary
-12. Progress UI
-
-Bài test tối đa 7 câu trả lời hợp lệ.
-
-FE nên hiển thị:
-
-Câu current_step + 1 / 7
-
-Lưu ý:
-
-current_step là số câu hợp lệ đã trả lời.
-Nếu user trả lời sai/lạc đề, current_step không tăng.
-Khi status = completed, không cho submit tiếp.
-
-Ví dụ:
-
-const displayStep = Math.min(session.current_step + 1, 7);
-13. Checklist FE
-[ ] Có màn đăng ký / đăng nhập
-[ ] Lưu access_token
-[ ] Lưu student_id
-[ ] Có màn bắt đầu RIASEC
-[ ] Gọi POST /sessions
-[ ] Hiển thị anchor question
-[ ] Gửi answer qua POST /sessions/{session_id}/answers
-[ ] Xử lý answer_warning
-[ ] Không tăng step khi warning
-[ ] Hiển thị adaptive question tiếp theo
-[ ] Khi completed thì lưu dcp_id
-[ ] Gọi GET /profiles/{dcp_id}
-[ ] Render mã RIASEC
-[ ] Render biểu đồ scores
-[ ] Render ngành học gợi ý
-[ ] Render summary
+```txt
+POST /api/profile/auth/register
+POST /api/profile/auth/login
+GET  /api/profile/auth/me
+POST /api/riasec/sessions
+POST /api/riasec/sessions/{session_id}/answers
+GET  /api/riasec/profiles/{dcp_id}
+```

@@ -4,15 +4,13 @@ from app.core.config import settings
 from app.core.constants import RIASEC_GROUPS
 
 
+DEFAULT_FOCUS_GROUPS = ["R", "I"]
+FOCUS_GROUP_POOL_SIZE = 4
+
+
 class AdaptiveEngine:
     def build_riasec_code(self, scores: dict, top_n: int = 3) -> str:
-        sorted_scores = sorted(
-            scores.items(),
-            key=lambda item: float(item[1]),
-            reverse=True,
-        )
-
-        return "".join([item[0] for item in sorted_scores[:top_n]])
+        return "".join([item[0] for item in self._sort_scores(scores)[:top_n]])
 
     def calculate_entropy(self, scores: dict) -> float:
         total = sum(float(value) for value in scores.values())
@@ -41,13 +39,7 @@ class AdaptiveEngine:
         confidence = confidence or {}
         asked_focus_groups = asked_focus_groups or []
 
-        sorted_scores = sorted(
-            scores.items(),
-            key=lambda item: float(item[1]),
-            reverse=True,
-        )
-
-        top_groups = sorted_scores[:4]
+        top_groups = self._sort_scores(scores)[:FOCUS_GROUP_POOL_SIZE]
         candidate_pairs = []
 
         for i in range(len(top_groups)):
@@ -56,11 +48,11 @@ class AdaptiveEngine:
                 g2, s2 = top_groups[j]
 
                 score_gap = abs(float(s1) - float(s2))
-                avg_score = (float(s1) + float(s2)) / 2
+                avg_score = self._average(float(s1), float(s2))
 
                 c1 = float(confidence.get(g1, 0))
                 c2 = float(confidence.get(g2, 0))
-                avg_confidence = (c1 + c2) / 2
+                avg_confidence = self._average(c1, c2)
 
                 priority = 0.0
                 priority += max(0, 10 - score_gap)
@@ -88,7 +80,7 @@ class AdaptiveEngine:
         if candidate_pairs:
             return candidate_pairs[0]["pair"]
 
-        return ["R", "I"]
+        return DEFAULT_FOCUS_GROUPS
 
     def should_terminate(
         self,
@@ -102,11 +94,7 @@ class AdaptiveEngine:
         if current_step >= settings.MAX_RIASEC_STEPS:
             return True, "Reached maximum number of questions"
 
-        sorted_scores = sorted(
-            scores.items(),
-            key=lambda item: float(item[1]),
-            reverse=True,
-        )
+        sorted_scores = self._sort_scores(scores)
 
         top_1 = sorted_scores[0]
         top_2 = sorted_scores[1]
@@ -131,3 +119,13 @@ class AdaptiveEngine:
             return True, "Confidence threshold reached"
 
         return False, None
+
+    def _sort_scores(self, scores: dict) -> list[tuple[str, float]]:
+        return sorted(
+            ((group, float(value)) for group, value in scores.items()),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+
+    def _average(self, *values: float) -> float:
+        return sum(values) / len(values)

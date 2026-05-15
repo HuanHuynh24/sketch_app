@@ -138,36 +138,31 @@ class ReportService:
             )
 
     def build_career_groups(self, riasec_code: str) -> list[str]:
-        result = []
-
-        for group in riasec_code:
-            result.extend(CAREER_GROUPS.get(group, []))
-
-        return list(dict.fromkeys(result))
+        return self._unique_items_for_code(CAREER_GROUPS, riasec_code)
 
     def build_digital_competencies(self, riasec_code: str) -> dict:
-        result = {}
-
-        for group in riasec_code:
-            result[group] = DIGITAL_COMPETENCIES.get(group, [])
-
-        return result
+        return {
+            group: DIGITAL_COMPETENCIES.get(group, [])
+            for group in riasec_code
+        }
 
     def build_recommended_majors(self, riasec_code: str) -> list[str]:
-        result = []
-
-        for group in riasec_code:
-            result.extend(RECOMMENDED_MAJORS.get(group, []))
-
-        return list(dict.fromkeys(result))
+        return self._unique_items_for_code(RECOMMENDED_MAJORS, riasec_code)
 
     def build_suitable_roles(self, riasec_code: str) -> list[str]:
-        result = []
+        return self._unique_items_for_code(SUITABLE_ROLES, riasec_code)
+
+    def _unique_items_for_code(
+        self,
+        mapping: dict[str, list[str]],
+        riasec_code: str,
+    ) -> list[str]:
+        items = []
 
         for group in riasec_code:
-            result.extend(SUITABLE_ROLES.get(group, []))
+            items.extend(mapping.get(group, []))
 
-        return list(dict.fromkeys(result))
+        return list(dict.fromkeys(items))
 
     def build_summary(self, riasec_code: str, scores: dict) -> str:
         top = riasec_code[:3]
