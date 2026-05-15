@@ -1,23 +1,32 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class RiasecScore(BaseModel):
-    R: float = 0
-    I: float = 0
-    A: float = 0
-    S: float = 0
-    E: float = 0
-    C: float = 0
+    R: float
+    I: float
+    A: float
+    S: float
+    E: float
+    C: float
+
+
+class RiasecEvidence(BaseModel):
+    group: str
+    quote: str | None
+    strength: float
+    confidence: float
 
 
 class RiasecScoringResult(BaseModel):
     scores: RiasecScore
     confidence: RiasecScore
     reasoning: str
-    detected_traits: list[str] = Field(default_factory=list)
+    detected_traits: list[str]
+    primary_groups: list[str]
+    evidence: list[RiasecEvidence]
 
 
 class NextQuestion(BaseModel):
     type: str
     content: str
-    focus_groups: list[str] = Field(default_factory=list)
+    focus_groups: list[str]

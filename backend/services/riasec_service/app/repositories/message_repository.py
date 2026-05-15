@@ -40,3 +40,15 @@ class MessageRepository:
             .order_by(ConversationMessage.created_at.asc())
             .all()
         )
+
+    def update_signal(
+        self,
+        message: ConversationMessage,
+        riasec_signal: dict,
+    ) -> ConversationMessage:
+        message.riasec_signal = riasec_signal
+        self.db.add(message)
+        self.db.commit()
+        self.db.refresh(message)
+
+        return message

@@ -6,7 +6,7 @@ Bạn là chuyên gia tư vấn hướng nghiệp theo mô hình Holland RIASEC.
 Tạo đúng 1 câu hỏi tình huống đầu tiên cho học sinh THPT Việt Nam.
 
 Mục tiêu:
-- Câu hỏi đầu tiên phải bao quát đủ 6 nhóm RIASEC.
+- Câu hỏi đầu tiên phải mở đủ cơ hội để học sinh bộc lộ cả 6 nhóm RIASEC.
 - R: thực hành, kỹ thuật, thiết bị, thao tác thực tế.
 - I: phân tích, nghiên cứu, dữ liệu, logic.
 - A: sáng tạo, thiết kế, ý tưởng, nội dung.
@@ -14,13 +14,14 @@ Mục tiêu:
 - E: lãnh đạo, thuyết phục, điều phối, kinh doanh.
 - C: quy trình, kế hoạch, kiểm tra, chính xác.
 
-Yêu cầu:
-- Bối cảnh gần với học sinh THPT Việt Nam.
-- Nên dùng tình huống như: dự án nhóm, CLB, ngày hội hướng nghiệp, cuộc thi sáng tạo, hoạt động trường học.
-- Câu hỏi phải mở để người dùng trả lời tự nhiên bằng vài câu.
-- Không dùng trắc nghiệm A/B/C cứng nhắc.
-- Không hỏi lý thuyết RIASEC.
-- Không quá 120 từ.
+Yêu cầu về tình huống:
+- Bối cảnh phải giống đời sống học sinh THPT Việt Nam hiện tại: lớp học, CLB, ngày hội hướng nghiệp, dự án truyền thông, hoạt động trải nghiệm, deadline gấp.
+- Có một chi tiết cụ thể làm tình huống sống động hơn, ví dụ: sắp đến giờ thuyết trình, nhóm thiếu người, số liệu bị rối, gian hàng chưa thu hút, bạn trong nhóm đang lúng túng.
+- Câu hỏi nghe như người tư vấn đang trò chuyện, không giống đề thi.
+- Không liệt kê quá dài các vai trò khô cứng.
+- Không dùng trắc nghiệm A/B/C.
+- Chỉ dùng 1 tình huống chính và 1 câu hỏi chính.
+- Không quá 90 từ.
 - Không giải thích ngoài JSON.
 
 Return only valid JSON:
@@ -92,7 +93,7 @@ Câu trả lời của học sinh:
 {answer_text}
 
 Nhiệm vụ:
-Chấm điểm từng nhóm RIASEC từ 0 đến 2 dựa trên câu trả lời.
+Chấm điểm từng nhóm RIASEC từ 0 đến 2 dựa trên bằng chứng có trong câu trả lời.
 
 Quy tắc điểm:
 - 0: không có tín hiệu.
@@ -114,6 +115,9 @@ Yêu cầu đánh giá:
 - Nếu câu trả lời mơ hồ, điểm và confidence phải thấp.
 - Không tự thêm thông tin không có trong câu trả lời.
 - confidence mỗi nhóm từ 0 đến 1.
+- primary_groups là 1-3 nhóm có bằng chứng rõ nhất.
+- evidence phải chỉ ra group, quote ngắn từ câu trả lời, strength và confidence.
+- Không chấm điểm cao cho nhóm nếu không có evidence rõ.
 - reasoning ngắn gọn bằng tiếng Việt.
 - detected_traits là các tín hiệu hành vi rút ra trực tiếp từ câu trả lời.
 - Không giải thích ngoài JSON.
@@ -137,7 +141,16 @@ Return only valid JSON:
     "C": 0
   }},
   "reasoning": "...",
-  "detected_traits": ["..."]
+  "detected_traits": ["..."],
+  "primary_groups": ["I", "C"],
+  "evidence": [
+    {{
+      "group": "I",
+      "quote": "trích dẫn ngắn từ câu trả lời",
+      "strength": 1.5,
+      "confidence": 0.8
+    }}
+  ]
 }}
 """
 
@@ -155,54 +168,41 @@ Return only valid JSON:
         return f"""
 Bạn là chuyên gia tư vấn hướng nghiệp theo mô hình Holland RIASEC.
 
-Đây là câu hỏi số: {question_number}
-Tổng số câu tối đa: 7
-
-Lịch sử hội thoại gần nhất:
-{history}
-
-Điểm hiện tại:
-{scores}
-
-Độ tin cậy hiện tại:
-{confidence}
-
-Nhóm cần phân biệt rõ hơn:
-{focus_groups}
-
-Bối cảnh bắt buộc cho câu hỏi tiếp theo:
-{suggested_context}
-
-Kiểu câu hỏi bắt buộc:
-{question_style}
-
-Các chủ đề/cụm từ cần tránh:
-{banned_topics}
+Câu hỏi số: {question_number}
+Điểm hiện tại: {scores}
+Độ tin cậy hiện tại: {confidence}
+Nhóm cần phân biệt rõ hơn: {focus_groups}
+Bối cảnh nên dùng: {suggested_context}
+Kiểu câu hỏi nên dùng: {question_style}
+Chủ đề/cụm từ cần tránh: {banned_topics}
+Lịch sử hội thoại gần nhất: {history}
 
 Hãy tạo đúng 1 câu hỏi tình huống tiếp theo.
 
 Yêu cầu bắt buộc:
-- Phải dùng bối cảnh: {suggested_context}.
-- Phải dùng kiểu câu hỏi: {question_style}.
-- Phải tập trung phân biệt nhóm: {focus_groups}.
-- Không lặp lại câu chữ, bối cảnh, chủ đề trong lịch sử.
+- Tập trung phân biệt nhóm: {focus_groups}.
+- Dùng bối cảnh gần với học sinh THPT Việt Nam.
+- Tình huống phải có chi tiết đời thực và một áp lực nhỏ: deadline, thiếu dữ liệu, nhóm chưa thống nhất, sản phẩm lỗi, người tham gia ít, hoặc phải chọn ưu tiên.
+- Câu hỏi phải khiến học sinh kể hành động cụ thể, không chỉ trả lời "em thích".
+- Không lặp lại câu chữ, bối cảnh hoặc chủ đề trong lịch sử.
 - Không dùng lại các chủ đề/cụm từ cần tránh.
-- Không dùng câu chung chung kiểu "Trong một hoạt động mới ở trường...".
-- Không hỏi trắc nghiệm A/B/C.
+- Không dùng trắc nghiệm A/B/C.
 - Không hỏi lý thuyết RIASEC.
 - Không hỏi quá rộng kiểu "bạn thích làm gì".
-- Câu hỏi phải cụ thể, thực tế, dễ trả lời.
-- Nội dung dưới 120 từ.
+- Viết tự nhiên như người tư vấn học đường đang hỏi học sinh.
+- Chỉ dùng 1 tình huống chính và 1 câu hỏi chính.
+- Không nhồi quá 3 hướng lựa chọn trong một câu.
+- Nội dung dưới 90 từ.
 - Không giải thích ngoài JSON.
 
-Các kiểu câu hỏi hợp lệ:
-- role_choice: đặt người dùng vào tình huống chọn vai trò.
-- trade_off: buộc người dùng chọn giữa 2 hướng hành động khác nhau.
-- priority_ranking: hỏi người dùng ưu tiên việc gì trước.
-- conflict_scenario: đưa ra một mâu thuẫn trong nhóm/dự án.
-- resource_constraint: tình huống thiếu thời gian/người/nguồn lực.
-- reflection: hỏi từ trải nghiệm cá nhân gần đây.
-- next_action: hỏi bước tiếp theo người dùng sẽ làm.
+Gợi ý theo question_style:
+- role_choice: hỏi học sinh muốn nhận vai trò nào trong một tình huống cụ thể.
+- trade_off: cho 2 hướng hành động khác nhau và hỏi em nghiêng về hướng nào hơn.
+- priority_ranking: hỏi em sẽ ưu tiên việc gì trước khi thời gian có hạn.
+- conflict_scenario: đặt một mâu thuẫn nhẹ trong nhóm/dự án.
+- resource_constraint: đặt tình huống thiếu thời gian/người/nguồn lực.
+- reflection: hỏi từ trải nghiệm cá nhân gần đây nhưng vẫn gắn với một tình huống cụ thể.
+- next_action: hỏi bước đầu tiên em sẽ làm.
 
 Return only valid JSON:
 {{
@@ -231,21 +231,11 @@ Bạn là chuyên gia hướng nghiệp cho học sinh THPT Việt Nam.
 Mã RIASEC: {riasec_code}
 Điểm: {scores}
 Độ tin cậy: {confidence}
-
-Nhóm ngành hệ thống gợi ý:
-{career_groups}
-
-Ngành học gợi ý:
-{recommended_majors}
-
-Vai trò/công việc phù hợp:
-{suitable_roles}
-
-Năng lực số nên phát triển:
-{digital_competencies}
-
-Lịch sử trả lời:
-{history}
+Nhóm ngành hệ thống gợi ý: {career_groups}
+Ngành học gợi ý: {recommended_majors}
+Vai trò/công việc phù hợp: {suitable_roles}
+Năng lực số nên phát triển: {digital_competencies}
+Lịch sử trả lời: {history}
 
 Hãy viết báo cáo cá nhân hóa ngắn gọn.
 

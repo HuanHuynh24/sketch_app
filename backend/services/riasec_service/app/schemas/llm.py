@@ -1,29 +1,25 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class GeneratedQuestion(BaseModel):
-    type: str = Field(default="adaptive_scenario")
+    type: str
     content: str
-    focus_groups: list[str] = Field(default_factory=list)
-
-    # Dùng để debug, chống lặp, và tăng đa dạng câu hỏi
-    context: str | None = None
-    question_style: str | None = None
+    focus_groups: list[str]
+    context: str
+    question_style: str
 
 
 class FinalReportResult(BaseModel):
     summary: str
-    strengths: list[str] = Field(default_factory=list)
-
-    suitable_career_groups: list[str] = Field(default_factory=list)
-    recommended_majors: list[str] = Field(default_factory=list)
-    suitable_roles: list[str] = Field(default_factory=list)
-    learning_suggestions: list[str] = Field(default_factory=list)
-
-    career_advice: list[str] = Field(default_factory=list)
+    strengths: list[str]
+    suitable_career_groups: list[str]
+    recommended_majors: list[str]
+    suitable_roles: list[str]
+    learning_suggestions: list[str]
+    career_advice: list[str]
 
 
 class AnswerQualityResult(BaseModel):
     is_valid: bool
     reason: str
-    warning_message: str | None = None
+    warning_message: str | None
