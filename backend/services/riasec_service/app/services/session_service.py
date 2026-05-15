@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.core.constants import (
     MESSAGE_ROLE_ASSISTANT,
     MESSAGE_ROLE_USER,
-    SESSION_STATUS_ABANDONED,
     SESSION_STATUS_COMPLETED,
     SESSION_STATUS_IN_PROGRESS,
 )
@@ -97,8 +96,10 @@ class SessionService:
         self,
         session_id: UUID,
         answer_text: str,
+        student_id: UUID,
     ):
         session = self.get_session_or_404(session_id)
+        self._ensure_session_owner(session, student_id)
 
         if session.status != SESSION_STATUS_IN_PROGRESS:
             raise HTTPException(
@@ -315,18 +316,12 @@ class SessionService:
             "dcp_id": dcp_id,
         }
 
-    def abandon_session(self, session_id: UUID):
-        session = self.get_session_or_404(session_id)
-
-        if session.status == SESSION_STATUS_COMPLETED:
+    def _ensure_session_owner(self, session, student_id: UUID) -> None:
+        if session.student_id != student_id:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Completed session cannot be abandoned",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this RIASEC session",
             )
-
-        session.status = SESSION_STATUS_ABANDONED
-
-        return self.session_repo.save(session)
 
     async def _validate_answer_quality(
         self,

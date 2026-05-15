@@ -1,13 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.message import MessageResponse
-
-
-class StartSessionRequest(BaseModel):
-    student_id: UUID
 
 
 class SubmitAnswerRequest(BaseModel):
@@ -15,6 +11,8 @@ class SubmitAnswerRequest(BaseModel):
 
 
 class RiasecSessionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     session_id: UUID
     student_id: UUID
     status: str
@@ -31,9 +29,6 @@ class RiasecSessionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     completed_at: datetime | None = None
-
-    class Config:
-        from_attributes = True
 
 
 class StartSessionResponse(BaseModel):

@@ -1,10 +1,12 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class MessageResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     message_id: UUID
     session_id: UUID
     role: str
@@ -13,6 +15,3 @@ class MessageResponse(BaseModel):
     metadata_json: dict | None = None
     riasec_signal: dict | None = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
