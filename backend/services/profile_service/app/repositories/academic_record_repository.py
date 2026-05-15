@@ -1,6 +1,8 @@
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.student_academic_record import StudentAcademicRecord
@@ -34,7 +36,15 @@ class AcademicRecordRepository:
         )
 
         self.db.add(record)
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid academic record data",
+            )
+
         self.db.refresh(record)
 
         return record
@@ -51,7 +61,15 @@ class AcademicRecordRepository:
         record.exam_type = data.exam_type
         record.exam_year = data.exam_year
 
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid academic record data",
+            )
+
         self.db.refresh(record)
 
         return record

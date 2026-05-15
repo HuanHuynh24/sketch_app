@@ -31,8 +31,15 @@ def update_my_profile(
 @router.get("/{student_id}", response_model=StudentResponse)
 def get_student_by_id(
     student_id: UUID,
+    current_student=Depends(get_current_student),
     db: Session = Depends(get_db),
 ):
+    if student_id != current_student.student_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this student profile",
+        )
+
     student = StudentRepository(db).get_by_id(student_id)
 
     if not student:
