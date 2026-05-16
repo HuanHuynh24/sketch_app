@@ -44,7 +44,7 @@ export default function SignUpForm() {
       });
 
       saveAuthSession(response);
-      // router.push("/chat");
+      router.push("/chat");
     } catch (err) {
       setError(
         err instanceof ApiError

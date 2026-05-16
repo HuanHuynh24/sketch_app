@@ -265,15 +265,16 @@ export async function loginStudent(payload: LoginPayload) {
 
 export async function getMe() {
   const token = getAccessToken();
-
   return requestJson<Student>(endpoint(profileApiUrl, "/auth/me"), {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
 
 export async function startRiasecSession(studentId: string) {
+  const token = getAccessToken();
   return requestJson<StartRiasecResponse>(endpoint(riasecApiUrl, "/sessions"), {
     method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: JSON.stringify({
       student_id: studentId,
     }),
@@ -281,10 +282,12 @@ export async function startRiasecSession(studentId: string) {
 }
 
 export async function submitRiasecAnswer(sessionId: string, answerText: string) {
+  const token = getAccessToken();
   return requestJson<SubmitAnswerResponse>(
     endpoint(riasecApiUrl, `/sessions/${sessionId}/answers`),
     {
       method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: JSON.stringify({
         answer_text: answerText,
       }),
@@ -293,7 +296,11 @@ export async function submitRiasecAnswer(sessionId: string, answerText: string) 
 }
 
 export async function getRiasecProfile(dcpId: string) {
+  const token = getAccessToken();
   return requestJson<DigitalCompetencyProfile>(
-    endpoint(riasecApiUrl, `/profiles/${dcpId}`),
+    endpoint(riasecApiUrl, `/profiles/${dcpId}`),{
+      method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }
   );
 }
