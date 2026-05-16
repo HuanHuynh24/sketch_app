@@ -49,8 +49,15 @@ def upsert_my_academic_record(
 @router.get("/{student_id}/academic-record", response_model=AcademicRecordResponse)
 def get_student_academic_record(
     student_id: UUID,
+    current_student=Depends(get_current_student),
     db: Session = Depends(get_db),
 ):
+    if student_id != current_student.student_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this academic record",
+        )
+
     student = StudentRepository(db).get_by_id(student_id)
 
     if not student:

@@ -1,6 +1,41 @@
 from app.schemas.llm import FinalReportResult
+from app.core.config import settings
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
+
+
+RIASEC_GROUP_INFO = {
+    "R": {
+        "name": "Realistic",
+        "label": "Thực tế - Kỹ thuật",
+        "short_description": "Thích thao tác trực tiếp, thử nghiệm, thiết bị, công cụ và các việc có kết quả nhìn thấy được.",
+    },
+    "I": {
+        "name": "Investigative",
+        "label": "Nghiên cứu - Phân tích",
+        "short_description": "Thích tìm hiểu nguyên nhân, phân tích dữ liệu, đặt giả thuyết và giải quyết vấn đề bằng logic.",
+    },
+    "A": {
+        "name": "Artistic",
+        "label": "Sáng tạo - Nghệ thuật",
+        "short_description": "Thích tạo ý tưởng, thiết kế, kể chuyện, làm nội dung và thể hiện góc nhìn riêng.",
+    },
+    "S": {
+        "name": "Social",
+        "label": "Xã hội - Hỗ trợ",
+        "short_description": "Thích lắng nghe, hướng dẫn, hỗ trợ người khác và tạo kết nối trong nhóm.",
+    },
+    "E": {
+        "name": "Enterprising",
+        "label": "Lãnh đạo - Thuyết phục",
+        "short_description": "Thích dẫn dắt, thuyết phục, điều phối nguồn lực và thúc đẩy mọi người hành động.",
+    },
+    "C": {
+        "name": "Conventional",
+        "label": "Tổ chức - Quy trình",
+        "short_description": "Thích kế hoạch rõ ràng, dữ liệu có cấu trúc, kiểm tra chi tiết và vận hành ổn định.",
+    },
+}
 
 
 CAREER_GROUPS = {
@@ -80,9 +115,9 @@ SUITABLE_ROLES = {
 
 
 class ReportService:
-    def __init__(self):
+    def __init__(self, enable_llm: bool = True):
         self.prompt_engine = PromptEngine()
-        self.llm_client = LLMClient()
+        self.llm_client = LLMClient() if enable_llm else None
 
     async def build_summary_with_llm(
         self,
@@ -108,6 +143,9 @@ class ReportService:
         )
 
         try:
+            if not self.llm_client:
+                raise RuntimeError("LLM client is disabled")
+
             data = await self.llm_client.generate_json(
                 prompt=prompt,
                 schema=FinalReportResult,
@@ -152,6 +190,93 @@ class ReportService:
     def build_suitable_roles(self, riasec_code: str) -> list[str]:
         return self._unique_items_for_code(SUITABLE_ROLES, riasec_code)
 
+    def build_result_payload(
+        self,
+        scores: dict,
+        confidence: dict,
+        riasec_code: str,
+    ) -> dict:
+        return {
+            "radar_chart": self.build_radar_chart(scores, confidence),
+            "dominant_groups": self.build_dominant_groups(scores, confidence),
+            "group_analysis": self.build_group_analysis(scores, confidence),
+            "career_recommendations": self.build_career_recommendations(riasec_code),
+        }
+
+    def build_radar_chart(self, scores: dict, confidence: dict) -> dict:
+        max_value = max(settings.MAX_RIASEC_STEPS * 2, 1)
+
+        axes = []
+        for group, info in RIASEC_GROUP_INFO.items():
+            raw_score = round(float(scores.get(group, 0)), 4)
+            confidence_value = round(float(confidence.get(group, 0)), 4)
+
+            axes.append(
+                {
+                    "group": group,
+                    "label": info["label"],
+                    "score": raw_score,
+                    "max_score": max_value,
+                    "normalized_score": round((raw_score / max_value) * 100, 2),
+                    "confidence": confidence_value,
+                    "description": info["short_description"],
+                }
+            )
+
+        return {
+            "type": "riasec_radar",
+            "max_score": max_value,
+            "axes": axes,
+        }
+
+    def build_dominant_groups(self, scores: dict, confidence: dict, top_n: int = 3) -> list[dict]:
+        sorted_groups = self._sort_groups_by_score(scores)
+
+        return [
+            {
+                "group": group,
+                "label": RIASEC_GROUP_INFO[group]["label"],
+                "score": round(score, 4),
+                "confidence": round(float(confidence.get(group, 0)), 4),
+                "description": RIASEC_GROUP_INFO[group]["short_description"],
+            }
+            for group, score in sorted_groups[:top_n]
+        ]
+
+    def build_group_analysis(self, scores: dict, confidence: dict) -> list[dict]:
+        analysis = []
+
+        for group, score in self._sort_groups_by_score(scores):
+            info = RIASEC_GROUP_INFO[group]
+            level = self._score_level(score)
+
+            analysis.append(
+                {
+                    "group": group,
+                    "name": info["name"],
+                    "label": info["label"],
+                    "score": round(score, 4),
+                    "confidence": round(float(confidence.get(group, 0)), 4),
+                    "level": level,
+                    "description": info["short_description"],
+                    "career_groups": CAREER_GROUPS.get(group, []),
+                    "recommended_majors": RECOMMENDED_MAJORS.get(group, []),
+                    "suitable_roles": SUITABLE_ROLES.get(group, []),
+                    "digital_competencies": DIGITAL_COMPETENCIES.get(group, []),
+                }
+            )
+
+        return analysis
+
+    def build_career_recommendations(self, riasec_code: str) -> dict:
+        return {
+            "riasec_code": riasec_code,
+            "career_groups": self.build_career_groups(riasec_code),
+            "recommended_majors": self.build_recommended_majors(riasec_code),
+            "suitable_roles": self.build_suitable_roles(riasec_code),
+            "digital_competencies": self.build_digital_competencies(riasec_code),
+        }
+
     def _unique_items_for_code(
         self,
         mapping: dict[str, list[str]],
@@ -163,6 +288,28 @@ class ReportService:
             items.extend(mapping.get(group, []))
 
         return list(dict.fromkeys(items))
+
+    def _sort_groups_by_score(self, scores: dict) -> list[tuple[str, float]]:
+        return sorted(
+            [
+                (group, float(scores.get(group, 0)))
+                for group in RIASEC_GROUP_INFO
+            ],
+            key=lambda item: item[1],
+            reverse=True,
+        )
+
+    def _score_level(self, score: float) -> str:
+        if score >= 8:
+            return "high"
+
+        if score >= 4:
+            return "medium"
+
+        if score > 0:
+            return "emerging"
+
+        return "low"
 
     def build_summary(self, riasec_code: str, scores: dict) -> str:
         top = riasec_code[:3]

@@ -1,7 +1,12 @@
+import logging
+
 from app.core.constants import RIASEC_GROUPS
-from app.schemas.scoring import RiasecScoringResult, RiasecScore
+from app.schemas.scoring import RiasecEvidence, RiasecScoringResult, RiasecScore
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
+
+
+logger = logging.getLogger(__name__)
 
 
 RIASEC_KEYWORDS = {
@@ -86,6 +91,9 @@ class ScoringEngine:
                 answer_text=answer_text,
             )
         except Exception:
+            logger.exception(
+                "Gemini scoring failed; falling back to rule-based scoring"
+            )
             return self.score_answer_rule_based(answer_text)
 
     async def score_answer_with_llm(
@@ -121,6 +129,11 @@ class ScoringEngine:
             confidence=RiasecScore(**cleaned_confidence),
             reasoning=result.reasoning,
             detected_traits=result.detected_traits,
+            primary_groups=self._normalize_primary_groups(
+                primary_groups=result.primary_groups,
+                scores=cleaned_scores,
+            ),
+            evidence=self._clean_evidence(result.evidence),
         )
 
     def score_answer_rule_based(self, answer_text: str) -> RiasecScoringResult:
@@ -145,11 +158,29 @@ class ScoringEngine:
             for key in RIASEC_GROUPS
         }
 
+        primary_groups = self._normalize_primary_groups(
+            primary_groups=[],
+            scores=scores,
+        )
+
+        evidence = [
+            RiasecEvidence(
+                group=group,
+                quote=", ".join(detected_traits[:3]) or None,
+                strength=scores[group],
+                confidence=confidence[group],
+            )
+            for group in primary_groups
+            if scores[group] > 0
+        ]
+
         return RiasecScoringResult(
             scores=RiasecScore(**scores),
             confidence=RiasecScore(**confidence),
             reasoning="Fallback rule-based scoring do Gemini không khả dụng hoặc trả dữ liệu không hợp lệ.",
             detected_traits=list(set(detected_traits)),
+            primary_groups=primary_groups,
+            evidence=evidence,
         )
 
     def merge_scores(
@@ -200,3 +231,45 @@ class ScoringEngine:
 
     def _clamp(self, value: float, min_value: float, max_value: float) -> float:
         return max(min_value, min(value, max_value))
+
+    def _normalize_primary_groups(
+        self,
+        primary_groups: list[str],
+        scores: dict,
+    ) -> list[str]:
+        valid_groups = [
+            group
+            for group in primary_groups
+            if group in RIASEC_GROUPS
+        ]
+
+        if valid_groups:
+            return valid_groups[:3]
+
+        return [
+            group
+            for group, score in sorted(
+                scores.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+            if score > 0
+        ][:3]
+
+    def _clean_evidence(self, evidence: list[RiasecEvidence]) -> list[RiasecEvidence]:
+        cleaned = []
+
+        for item in evidence:
+            if item.group not in RIASEC_GROUPS:
+                continue
+
+            cleaned.append(
+                RiasecEvidence(
+                    group=item.group,
+                    quote=item.quote,
+                    strength=self._clamp(float(item.strength), 0, 2),
+                    confidence=self._clamp(float(item.confidence), 0, 1),
+                )
+            )
+
+        return cleaned

@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.repositories.profile_repository import ProfileRepository
 from app.schemas.profile import DigitalCompetencyProfileResponse
 from app.services.profile_client import get_current_student_id
+from app.services.report_service import ReportService
 
 router = APIRouter(prefix="/profiles", tags=["Digital Competency Profiles"])
 
@@ -18,6 +19,7 @@ def get_profile(
     db: Session = Depends(get_db),
 ):
     repo = ProfileRepository(db)
+    report_service = ReportService(enable_llm=False)
     profile = repo.get_by_id(dcp_id)
 
     if not profile:
@@ -32,4 +34,21 @@ def get_profile(
             detail="You do not have access to this RIASEC profile",
         )
 
-    return profile
+    return {
+        "dcp_id": profile.dcp_id,
+        "student_id": profile.student_id,
+        "session_id": profile.session_id,
+        "riasec_code": profile.riasec_code,
+        "scores": profile.scores,
+        "confidence": profile.confidence,
+        "career_groups": profile.career_groups,
+        "digital_competencies": profile.digital_competencies,
+        "recommended_majors": profile.recommended_majors,
+        "summary": profile.summary,
+        "created_at": profile.created_at,
+        **report_service.build_result_payload(
+            scores=profile.scores,
+            confidence=profile.confidence,
+            riasec_code=profile.riasec_code,
+        ),
+    }

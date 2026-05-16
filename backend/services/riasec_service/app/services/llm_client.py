@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import re
 from typing import Type
 
@@ -8,6 +9,9 @@ from google.genai import types
 from pydantic import BaseModel, ValidationError
 
 from app.core.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -30,7 +34,9 @@ class LLMClient:
 
         last_error = None
 
-        for _ in range(retries + 1):
+        schema_name = schema.__name__ if schema else "dict"
+
+        for attempt in range(retries + 1):
             try:
                 return await asyncio.to_thread(
                     self._generate_json_sync,
@@ -40,7 +46,25 @@ class LLMClient:
                 )
             except Exception as exc:
                 last_error = exc
+                logger.warning(
+                    "Gemini JSON generation attempt %s/%s failed for schema=%s model=%s: %s",
+                    attempt + 1,
+                    retries + 1,
+                    schema_name,
+                    self.model,
+                    exc,
+                )
 
+        logger.error(
+            "Gemini JSON generation failed after retries for schema=%s model=%s",
+            schema_name,
+            self.model,
+            exc_info=(
+                (type(last_error), last_error, last_error.__traceback__)
+                if last_error
+                else None
+            ),
+        )
         raise RuntimeError(f"Gemini JSON generation failed: {last_error}") from last_error
 
     def _generate_json_sync(
@@ -64,6 +88,18 @@ class LLMClient:
             config=types.GenerateContentConfig(**config_kwargs),
         )
 
+        if schema:
+            parsed = getattr(response, "parsed", None)
+
+            if parsed is not None:
+                try:
+                    if isinstance(parsed, BaseModel):
+                        return parsed.model_dump()
+
+                    return schema.model_validate(parsed).model_dump()
+                except ValidationError as exc:
+                    raise ValueError(f"Invalid Gemini parsed schema: {exc}") from exc
+
         raw_text = response.text or ""
         data = self._parse_json(raw_text)
 
@@ -71,7 +107,10 @@ class LLMClient:
             try:
                 return schema.model_validate(data).model_dump()
             except ValidationError as exc:
-                raise ValueError(f"Invalid Gemini JSON schema: {exc}") from exc
+                preview = raw_text[:1000]
+                raise ValueError(
+                    f"Invalid Gemini JSON schema: {exc}. Raw response preview: {preview}"
+                ) from exc
 
         return data
 

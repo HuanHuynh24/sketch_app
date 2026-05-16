@@ -1,6 +1,8 @@
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.student import Student
@@ -39,7 +41,15 @@ class StudentRepository:
         )
 
         self.db.add(student)
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already exists",
+            )
+
         self.db.refresh(student)
 
         return student
@@ -50,7 +60,15 @@ class StudentRepository:
         for field, value in update_data.items():
             setattr(student, field, value)
 
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid student data",
+            )
+
         self.db.refresh(student)
 
         return student
