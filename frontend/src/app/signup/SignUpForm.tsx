@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarDays, Flag, Lock, Mail, MapPin, Palette, Pencil } from "lucide-react";
-import { ApiError, registerStudent, saveAuthSession } from "@/lib/api";
+import { ApiError, registerStudent } from "@/lib/api";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function SignUpForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await registerStudent({
+      await registerStudent({
         full_name: name.trim(),
         email: email.trim(),
         password,
@@ -43,7 +43,6 @@ export default function SignUpForm() {
         target_province: targetProvince.trim() || undefined,
       });
 
-      saveAuthSession(response);
       router.push("/chat");
     } catch (err) {
       setError(

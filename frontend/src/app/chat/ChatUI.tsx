@@ -25,8 +25,6 @@ import {
   getAccessToken,
   getMe,
   getRiasecProfile,
-  getStudentId,
-  saveStudentId,
   startRiasecSession,
   submitRiasecAnswer,
 } from "@/lib/api";
@@ -37,6 +35,8 @@ interface Message {
   text: string;
   tone?: "normal" | "warning" | "result";
 }
+
+type SubmitStage = "idle" | "sending" | "waiting";
 
 const riasecGroups: RiasecGroup[] = ["R", "I", "A", "S", "E", "C"];
 const fallbackMaxSteps = 7;
@@ -127,6 +127,44 @@ function ResultPanel({ profile }: { profile: DigitalCompetencyProfile }) {
   );
 }
 
+function SubmitStatus({ stage }: { stage: SubmitStage }) {
+  if (stage === "idle") {
+    return null;
+  }
+
+  const isSending = stage === "sending";
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-ink bg-sketch-surface shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
+    >
+      <div className="flex items-center gap-2 font-bold text-sketch-blue" style={{ fontFamily: "var(--font-heading)" }}>
+        <LoaderCircle size={18} className="animate-spin" />
+        {isSending ? "Đang gửi câu trả lời..." : "Đang chờ tin nhắn phản hồi..."}
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-sm font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+        <div
+          className={`flex items-center justify-center gap-1 border-[2px] border-sketch-ink px-3 py-2 ${
+            isSending ? "bg-sketch-yellow text-sketch-ink" : "bg-sketch-blue text-white"
+          }`}
+        >
+          <SendHorizontal size={14} /> Gửi
+        </div>
+        <div
+          className={`flex items-center justify-center gap-1 border-[2px] border-sketch-ink px-3 py-2 ${
+            isSending ? "bg-sketch-bg text-sketch-muted" : "bg-sketch-yellow text-sketch-ink"
+          }`}
+        >
+          <Bot size={14} /> Phản hồi
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ChatUI() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -136,9 +174,10 @@ export default function ChatUI() {
   const [error, setError] = useState("");
   const [authError, setAuthError] = useState("");
   const [isLoadingSession, setIsLoadingSession] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStage, setSubmitStage] = useState<SubmitStage>("idle");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  const isSubmitting = submitStage !== "idle";
   const maxSteps = session?.max_steps ?? fallbackMaxSteps;
   const displayStep = session
     ? Math.min(session.status === "completed" ? session.current_step : session.current_step + 1, maxSteps)
@@ -146,25 +185,17 @@ export default function ChatUI() {
   const isCompleted = session?.status === "completed";
   const isInputDisabled = isLoadingSession || isSubmitting || Boolean(authError) || !session || isCompleted;
 
-  const resolveStudentId = async () => {
-    const storedStudentId = getStudentId();
-
-    if (storedStudentId) {
-      return storedStudentId;
-    }
-
+  const verifyCurrentStudent = async () => {
     if (!getAccessToken()) {
       throw new ApiError("Bạn cần đăng nhập trước khi bắt đầu hội thoại.", 401, null);
     }
 
-    const me = await getMe();
-    saveStudentId(me.student_id);
-    return me.student_id;
+    await getMe();
   };
 
   const startConversation = async () => {
     setIsLoadingSession(true);
-    setIsSubmitting(false);
+    setSubmitStage("idle");
     setWarning("");
     setError("");
     setAuthError("");
@@ -173,8 +204,8 @@ export default function ChatUI() {
     setMessages([]);
 
     try {
-      const studentId = await resolveStudentId();
-      const data = await startRiasecSession(studentId);
+      await verifyCurrentStudent();
+      const data = await startRiasecSession();
 
       setSession(data.session);
       setMessages([
@@ -206,7 +237,7 @@ export default function ChatUI() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [messages, profile, warning]);
+  }, [messages, profile, warning, submitStage]);
 
   const handleSend = async () => {
     const answerText = input.trim();
@@ -225,10 +256,20 @@ export default function ChatUI() {
     setInput("");
     setWarning("");
     setError("");
-    setIsSubmitting(true);
+    setSubmitStage("sending");
+
+    let waitingTimer: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      const data = await submitRiasecAnswer(session.session_id, answerText);
+      const answerRequest = submitRiasecAnswer(session.session_id, answerText);
+
+      waitingTimer = setTimeout(() => {
+        setSubmitStage((currentStage) =>
+          currentStage === "sending" ? "waiting" : currentStage,
+        );
+      }, 300);
+
+      const data = await answerRequest;
       setSession(data.session);
       const assistantMessage = data.assistant_message;
 
@@ -248,6 +289,7 @@ export default function ChatUI() {
       }
 
       if (assistantMessage) {
+        setSubmitStage("idle");
         setMessages((prev) => [
           ...prev,
           {
@@ -268,6 +310,7 @@ export default function ChatUI() {
         }
       }
     } catch (err) {
+      setSubmitStage("idle");
       const message = getErrorText(err);
       setError(message);
       setInput(answerText);
@@ -281,9 +324,20 @@ export default function ChatUI() {
         },
       ]);
     } finally {
-      setIsSubmitting(false);
+      if (waitingTimer) {
+        clearTimeout(waitingTimer);
+      }
+
+      setSubmitStage("idle");
     }
   };
+
+  const submitButtonLabel =
+    submitStage === "sending"
+      ? "Đang gửi..."
+      : submitStage === "waiting"
+        ? "Chờ phản hồi..."
+        : "Gửi";
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -382,6 +436,8 @@ export default function ChatUI() {
           </div>
         ))}
 
+        <SubmitStatus stage={submitStage} />
+
         {warning && (
           <p role="status" className="self-start text-sm font-bold text-sketch-error">
             {warning}
@@ -416,7 +472,8 @@ export default function ChatUI() {
           className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          <SendHorizontal size={18} /> {isSubmitting ? "Đang gửi..." : "Gửi"}
+          {isSubmitting ? <LoaderCircle size={18} className="animate-spin" /> : <SendHorizontal size={18} />}
+          {submitButtonLabel}
         </button>
       </div>
     </div>

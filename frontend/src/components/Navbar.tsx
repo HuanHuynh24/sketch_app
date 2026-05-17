@@ -27,6 +27,7 @@ export default function Navbar() {
         {[
           { href: "/#features", label: "Pathways" },
           { href: "/chat",      label: "AI Insights" },
+          { href: "/admission", label: "La Bàn" },
           { href: "/profile",   label: "Hồ sơ" },
         ].map(({ href, label }) => (
           <li key={href}>

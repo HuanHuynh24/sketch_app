@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, HelpCircle, ArrowRight } from "lucide-react";
-import { ApiError, loginStudent, saveAuthSession } from "@/lib/api";
+import { ApiError, loginStudent } from "@/lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,12 +20,11 @@ export default function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await loginStudent({
+      await loginStudent({
         email: email.trim(),
         password,
       });
 
-      saveAuthSession(response);
       router.push("/chat");
     } catch (err) {
       setError(

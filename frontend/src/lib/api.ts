@@ -1,8 +1,14 @@
+import axios, { AxiosHeaders } from "axios";
+import type { AxiosRequestConfig } from "axios";
+
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
 export type RiasecGroup = "R" | "I" | "A" | "S" | "E" | "C";
 
 export type RiasecScore = Record<RiasecGroup, number>;
 
-export type RiasecStatus = "in_progress" | "completed" | "abandoned";
+export type RiasecStatus = "in_progress" | "completed";
 
 export interface Student {
   student_id: string;
@@ -13,15 +19,15 @@ export interface Student {
   area_code: string;
   priority_group?: string | null;
   target_province?: string | null;
-  is_active?: boolean;
-  is_verified?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  is_active: boolean;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthResponse {
   access_token: string;
-  token_type: string;
+  token_type: "bearer";
   expires_in: number;
   student: Student;
 }
@@ -47,24 +53,43 @@ export interface RiasecSession {
   student_id: string;
   status: RiasecStatus;
   current_step: number;
-  min_steps?: number;
-  max_steps?: number;
+  min_steps: number;
+  max_steps: number;
   scores: RiasecScore;
   confidence: RiasecScore;
-  entropy?: number;
-  current_focus_groups?: RiasecGroup[];
+  entropy: number;
+  current_focus_groups: RiasecGroup[];
   riasec_code?: string | null;
   termination_reason?: string | null;
   final_summary?: string | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
   completed_at?: string | null;
+}
+
+export interface RiasecEvidence {
+  group: RiasecGroup;
+  quote: string;
+  strength: number;
+  confidence: number;
+}
+
+export interface RiasecSignal {
+  scores?: Partial<RiasecScore>;
+  confidence?: Partial<RiasecScore>;
+  focus_groups?: RiasecGroup[];
+  primary_groups?: RiasecGroup[];
+  detected_traits?: string[];
+  evidence?: RiasecEvidence[];
+  reasoning?: string;
+  scenario_message_id?: string | null;
+  scenario_type?: string | null;
 }
 
 export interface RiasecMessage {
   message_id: string;
   session_id: string;
-  role: "assistant" | "user" | "system" | string;
+  role: "assistant" | "user" | "system";
   content: string;
   message_type:
     | "anchor_scenario"
@@ -72,18 +97,9 @@ export interface RiasecMessage {
     | "answer"
     | "invalid_answer"
     | "answer_warning"
-    | "final_result"
-    | string;
-  metadata_json?: {
-    type?: string;
-    focus_groups?: RiasecGroup[];
-    context?: string;
-    question_style?: string;
-    reason?: string;
-    repeat_question?: string;
-    [key: string]: unknown;
-  } | null;
-  riasec_signal?: Record<string, unknown> | null;
+    | "final_result";
+  metadata_json?: Record<string, unknown> | null;
+  riasec_signal?: RiasecSignal | null;
   created_at: string;
 }
 
@@ -93,11 +109,57 @@ export interface StartRiasecResponse {
 }
 
 export interface SubmitAnswerResponse {
-  status: "in_progress" | "completed";
+  status: RiasecStatus;
   session: RiasecSession;
   user_message: RiasecMessage;
   assistant_message: RiasecMessage | null;
   dcp_id: string | null;
+}
+
+export interface RadarAxis {
+  group: RiasecGroup;
+  label: string;
+  score: number;
+  max_score: number;
+  normalized_score: number;
+  confidence: number;
+  description: string;
+}
+
+export interface RadarChart {
+  type: "riasec_radar";
+  max_score: number;
+  axes: RadarAxis[];
+}
+
+export interface DominantGroup {
+  group: RiasecGroup;
+  label: string;
+  score: number;
+  confidence: number;
+  description: string;
+}
+
+export interface GroupAnalysis {
+  group: RiasecGroup;
+  name: string;
+  label: string;
+  score: number;
+  confidence: number;
+  level: "low" | "emerging" | "medium" | "high";
+  description: string;
+  career_groups: string[];
+  recommended_majors: string[];
+  suitable_roles: string[];
+  digital_competencies: string[];
+}
+
+export interface CareerRecommendations {
+  riasec_code: string;
+  career_groups: string[];
+  recommended_majors: string[];
+  suitable_roles: string[];
+  digital_competencies: Partial<Record<RiasecGroup, string[]>>;
 }
 
 export interface DigitalCompetencyProfile {
@@ -108,10 +170,14 @@ export interface DigitalCompetencyProfile {
   scores: RiasecScore;
   confidence: RiasecScore;
   career_groups: string[];
-  digital_competencies: Record<string, string[]>;
+  digital_competencies: Partial<Record<RiasecGroup, string[]>>;
   recommended_majors: string[];
   summary: string;
   created_at: string;
+  radar_chart: RadarChart | null;
+  dominant_groups: DominantGroup[] | null;
+  group_analysis: GroupAnalysis[] | null;
+  career_recommendations: CareerRecommendations | null;
 }
 
 export class ApiError extends Error {
@@ -126,23 +192,31 @@ export class ApiError extends Error {
   }
 }
 
-const profileApiUrl =
-  process.env.NEXT_PUBLIC_PROFILE_API_URL ?? "http://localhost:8000/api/profile";
-
-const riasecApiUrl =
-  process.env.NEXT_PUBLIC_RIASEC_API_URL ?? "http://localhost:8000/api/riasec";
+type ApiRequestConfig = Omit<AxiosRequestConfig, "auth"> & {
+  auth?: boolean;
+};
 
 const STORAGE_KEYS = {
   token: "access_token",
-  studentId: "student_id",
+  student: "student",
+  legacyStudentId: "student_id",
 } as const;
 
-function trimTrailingSlash(url: string) {
-  return url.replace(/\/+$/, "");
+const apiClient = axios.create({
+  baseURL: API_BASE_URL.replace(/\/+$/, ""),
+  timeout: 30000,
+});
+
+function getBrowserStorage() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage;
 }
 
-function endpoint(baseUrl: string, path: string) {
-  return `${trimTrailingSlash(baseUrl)}${path.startsWith("/") ? path : `/${path}`}`;
+function isFormData(value: unknown) {
+  return typeof FormData !== "undefined" && value instanceof FormData;
 }
 
 function getErrorMessage(status: number, payload: unknown) {
@@ -172,6 +246,8 @@ function getErrorMessage(status: number, payload: unknown) {
         })
         .join(" ");
     }
+
+    return JSON.stringify(detail);
   }
 
   if (typeof payload === "string" && payload.trim()) {
@@ -181,37 +257,56 @@ function getErrorMessage(status: number, payload: unknown) {
   return `Yêu cầu thất bại với mã lỗi ${status}.`;
 }
 
-async function requestJson<T>(
-  url: string,
-  options: RequestInit = {},
-): Promise<T> {
-  console.log(`Requesting ${url} with options:`, options);
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-  });
+function toApiError(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status ?? 0;
+    const detail = error.response?.data ?? error.message;
+    const message =
+      status > 0
+        ? getErrorMessage(status, detail)
+        : "Không thể kết nối tới hệ thống. Vui lòng kiểm tra backend và thử lại.";
 
-  const contentType = response.headers.get("content-type") ?? "";
-  const payload = contentType.includes("application/json")
-    ? await response.json()
-    : await response.text();
-
-  if (!response.ok) {
-    throw new ApiError(getErrorMessage(response.status, payload), response.status, payload);
+    return new ApiError(message, status, detail);
   }
 
-  return payload as T;
+  if (error instanceof ApiError) {
+    return error;
+  }
+
+  return new ApiError("Không thể xử lý phản hồi từ hệ thống.", 0, error);
 }
 
-function getBrowserStorage() {
-  if (typeof window === "undefined") {
-    return null;
+async function apiRequest<T>(
+  path: string,
+  options: ApiRequestConfig = {},
+): Promise<T> {
+  const { auth, headers: initialHeaders, data, ...axiosOptions } = options;
+  const headers = AxiosHeaders.from(initialHeaders as AxiosHeaders | undefined);
+
+  if (data !== undefined && !isFormData(data) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
-  return window.localStorage;
+  if (auth) {
+    const token = getAccessToken();
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
+  try {
+    const response = await apiClient.request<T>({
+      ...axiosOptions,
+      url: path,
+      data,
+      headers,
+    });
+
+    return response.data;
+  } catch (error) {
+    throw toApiError(error);
+  }
 }
 
 export function saveAuthSession(response: AuthResponse) {
@@ -222,7 +317,12 @@ export function saveAuthSession(response: AuthResponse) {
   }
 
   storage.setItem(STORAGE_KEYS.token, response.access_token);
-  storage.setItem(STORAGE_KEYS.studentId, response.student.student_id);
+  storage.setItem(STORAGE_KEYS.student, JSON.stringify(response.student));
+  storage.removeItem(STORAGE_KEYS.legacyStudentId);
+}
+
+export function saveStudent(student: Student) {
+  getBrowserStorage()?.setItem(STORAGE_KEYS.student, JSON.stringify(student));
 }
 
 export function clearAuthSession() {
@@ -233,74 +333,81 @@ export function clearAuthSession() {
   }
 
   storage.removeItem(STORAGE_KEYS.token);
-  storage.removeItem(STORAGE_KEYS.studentId);
+  storage.removeItem(STORAGE_KEYS.student);
+  storage.removeItem(STORAGE_KEYS.legacyStudentId);
 }
 
 export function getAccessToken() {
   return getBrowserStorage()?.getItem(STORAGE_KEYS.token) ?? null;
 }
 
-export function getStudentId() {
-  return getBrowserStorage()?.getItem(STORAGE_KEYS.studentId) ?? null;
-}
+export function getStoredStudent() {
+  const rawStudent = getBrowserStorage()?.getItem(STORAGE_KEYS.student);
 
-export function saveStudentId(studentId: string) {
-  getBrowserStorage()?.setItem(STORAGE_KEYS.studentId, studentId);
+  if (!rawStudent) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawStudent) as Student;
+  } catch {
+    return null;
+  }
 }
 
 export async function registerStudent(payload: RegisterStudentPayload) {
-  console.log("Logging in with payload:", payload);
-  return requestJson<AuthResponse>(endpoint(profileApiUrl, "/auth/register"), {
+  const data = await apiRequest<AuthResponse>("/api/profile/auth/register", {
     method: "POST",
-    body: JSON.stringify(payload),
+    data: payload,
   });
+
+  saveAuthSession(data);
+  return data;
 }
 
 export async function loginStudent(payload: LoginPayload) {
-  return requestJson<AuthResponse>(endpoint(profileApiUrl, "/auth/login"), {
+  const data = await apiRequest<AuthResponse>("/api/profile/auth/login", {
     method: "POST",
-    body: JSON.stringify(payload),
+    data: payload,
   });
+
+  saveAuthSession(data);
+  return data;
 }
 
 export async function getMe() {
-  const token = getAccessToken();
-  return requestJson<Student>(endpoint(profileApiUrl, "/auth/me"), {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  const student = await apiRequest<Student>("/api/profile/auth/me", {
+    method: "GET",
+    auth: true,
   });
+
+  saveStudent(student);
+  return student;
 }
 
-export async function startRiasecSession(studentId: string) {
-  const token = getAccessToken();
-  return requestJson<StartRiasecResponse>(endpoint(riasecApiUrl, "/sessions"), {
+export async function startRiasecSession() {
+  return apiRequest<StartRiasecResponse>("/api/riasec/sessions", {
     method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: JSON.stringify({
-      student_id: studentId,
-    }),
+    auth: true,
   });
 }
 
 export async function submitRiasecAnswer(sessionId: string, answerText: string) {
-  const token = getAccessToken();
-  return requestJson<SubmitAnswerResponse>(
-    endpoint(riasecApiUrl, `/sessions/${sessionId}/answers`),
+  return apiRequest<SubmitAnswerResponse>(
+    `/api/riasec/sessions/${sessionId}/answers`,
     {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: JSON.stringify({
+      auth: true,
+      data: {
         answer_text: answerText,
-      }),
+      },
     },
   );
 }
 
 export async function getRiasecProfile(dcpId: string) {
-  const token = getAccessToken();
-  return requestJson<DigitalCompetencyProfile>(
-    endpoint(riasecApiUrl, `/profiles/${dcpId}`),{
-      method: "GET",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    }
-  );
+  return apiRequest<DigitalCompetencyProfile>(`/api/riasec/profiles/${dcpId}`, {
+    method: "GET",
+    auth: true,
+  });
 }
