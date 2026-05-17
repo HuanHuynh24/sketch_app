@@ -1,4 +1,13 @@
-# Mọi Model bạn tạo sau này (ví dụ User, Score) đều phải import vào đây
+from .admission_document_chunk import AdmissionDocumentChunk
+from .admission_raw_document import AdmissionRawDocument
+from .admission_source import AdmissionSource
 from .base import Base
+from .university import University
 
-# Ví dụ sau này: from .user import User
+__all__ = [
+    "AdmissionDocumentChunk",
+    "AdmissionRawDocument",
+    "AdmissionSource",
+    "Base",
+    "University",
+]

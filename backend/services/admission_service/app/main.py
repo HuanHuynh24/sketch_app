@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import health
+from app.api import health, rag
 from app.core.config import settings
 from app.core.database import init_schema
 
@@ -17,6 +17,11 @@ app.include_router(
     health.router,
     prefix=settings.API_PREFIX,
     tags=["Health Check"],
+)
+app.include_router(
+    rag.router,
+    prefix=settings.API_PREFIX,
+    tags=["Admission RAG"],
 )
 
 

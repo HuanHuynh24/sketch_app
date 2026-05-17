@@ -1,6 +1,6 @@
 services:
   postgres_db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: ms_postgres
     restart: always
     env_file: .env
@@ -66,6 +66,14 @@ services:
       - DB_SCHEMA=admission
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
       - PYTHONDONTWRITEBYTECODE=1
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-local}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-local-hashing-v1}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-768}
+      - EMBEDDING_BATCH_SIZE=${EMBEDDING_BATCH_SIZE:-32}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL}
+      - GEMINI_CHAT_TIMEOUT_SECONDS=${GEMINI_CHAT_TIMEOUT_SECONDS:-25}
     ports:
       - "8003:8000"
     volumes:

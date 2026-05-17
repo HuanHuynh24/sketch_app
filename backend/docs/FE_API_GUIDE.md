@@ -32,6 +32,7 @@ Các prefix chính:
 ```txt
 Profile: /api/profile
 RIASEC : /api/riasec
+Admission RAG: /api/admission/rag
 ```
 
 API cần đăng nhập phải gửi:
@@ -629,7 +630,133 @@ Chi tiết    : dùng group_analysis
 Ngành/nghề  : dùng career_recommendations
 ```
 
-## 10. TypeScript Types
+## 10. Admission Chatbot
+
+Chatbot hỏi đáp thông tin trường/ngành dùng dữ liệu tuyển sinh đã ingest và vector index trong Admission Service.
+
+FE gọi qua API Gateway:
+
+```txt
+POST /api/admission/rag/chat
+```
+
+API này hiện chưa yêu cầu token. Nếu muốn gắn theo user sau này thì FE chỉ cần bật `auth: true`, backend sẽ bổ sung kiểm tra token sau.
+
+Request:
+
+```json
+{
+  "question": "Ở TP HCM có trường nào tuyển ngành công nghệ thông tin?",
+  "top_k": 6,
+  "province": "TP.HCM",
+  "university_code": null,
+  "year": 2025,
+  "use_llm": true
+}
+```
+
+Ý nghĩa field:
+
+```txt
+question        : câu hỏi của user, bắt buộc
+top_k           : số đoạn dữ liệu RAG lấy làm context, mặc định 6, tối đa 12
+province        : lọc theo tỉnh/thành, ví dụ TP.HCM, Hà Nội, Đà Nẵng, Huế
+university_code : lọc theo mã trường nội bộ, ví dụ HUI, HUST, UIT
+year            : lọc theo năm tuyển sinh, ví dụ 2025
+use_llm         : true để Gemini viết câu trả lời, false để trả lời dạng trích xuất nguồn
+```
+
+Response:
+
+```json
+{
+  "question": "Ở TP HCM có trường nào tuyển ngành công nghệ thông tin?",
+  "answer": "Theo dữ liệu hiện có, Trường Đại học Công nghiệp Thành phố Hồ Chí Minh có tuyển ngành Công nghệ thông tin...",
+  "used_llm": true,
+  "model": "gemini-2.5-flash",
+  "sources": [
+    {
+      "citation_id": 1,
+      "chunk_id": "uuid",
+      "score": 0.742084,
+      "university_code": "HUI",
+      "university_name": "Truong Dai hoc Cong nghiep Thanh pho Ho Chi Minh",
+      "province": "TP.HCM",
+      "source_url": "https://tuyensinh.iuh.edu.vn/",
+      "document_type": "admission_homepage",
+      "year": 2025,
+      "snippet": "..."
+    }
+  ]
+}
+```
+
+FE gợi ý:
+
+```ts
+export interface AdmissionChatSource {
+  citation_id: number;
+  chunk_id: string;
+  score: number;
+  university_code: string;
+  university_name: string;
+  province: string | null;
+  source_url: string;
+  document_type: string;
+  year: number | null;
+  snippet: string;
+}
+
+export interface AdmissionChatResponse {
+  question: string;
+  answer: string;
+  used_llm: boolean;
+  model: string | null;
+  sources: AdmissionChatSource[];
+}
+
+export async function askAdmissionChat(question: string) {
+  return apiFetch<AdmissionChatResponse>("/api/admission/rag/chat", {
+    method: "POST",
+    body: JSON.stringify({
+      question,
+      top_k: 6,
+      use_llm: true,
+    }),
+  });
+}
+```
+
+FE nên hiển thị:
+
+```txt
+- answer là nội dung chatbot trả lời chính
+- sources là danh sách nguồn để user kiểm tra lại thông tin
+- source_url nên mở tab mới khi user bấm "Xem nguồn"
+- nếu used_llm = false thì backend đang trả lời fallback từ dữ liệu tìm được
+```
+
+Endpoint kiểm tra index:
+
+```txt
+GET /api/admission/rag/stats
+```
+
+Response mẫu:
+
+```json
+{
+  "chunks": 899,
+  "vector_chunks": 899,
+  "indexed_documents": 75,
+  "indexed_universities": 74,
+  "embedding_provider": "gemini",
+  "embedding_model": "gemini-embedding-001",
+  "embedding_dimension": 768
+}
+```
+
+## 11. TypeScript Types
 
 ```ts
 export type RiasecGroup = "R" | "I" | "A" | "S" | "E" | "C";
@@ -791,7 +918,7 @@ export interface DigitalCompetencyProfile {
 }
 ```
 
-## 11. UI Behavior Bắt Buộc
+## 12. UI Behavior Bắt Buộc
 
 Khi bắt đầu test:
 
@@ -832,7 +959,7 @@ Nếu muốn hiển thị câu hỏi hiện tại:
 const displayQuestionNo = Math.min(session.current_step + 1, session.max_steps);
 ```
 
-## 12. Error Handling
+## 13. Error Handling
 
 Các lỗi thường gặp:
 
@@ -854,7 +981,7 @@ localStorage.removeItem("student");
 router.push("/login");
 ```
 
-## 13. API Không Nên Gọi Từ FE
+## 14. API Không Nên Gọi Từ FE
 
 Không gọi trực tiếp:
 
@@ -876,4 +1003,5 @@ GET  /api/profile/auth/me
 POST /api/riasec/sessions
 POST /api/riasec/sessions/{session_id}/answers
 GET  /api/riasec/profiles/{dcp_id}
+POST /api/admission/rag/chat
 ```

@@ -1,0 +1,1500 @@
+[
+  {
+    "university_code": "BKA",
+    "university_name": "Dai hoc Bach khoa Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hust.edu.vn",
+    "admission_url": "https://hust.edu.vn/vi/tuyen-sinh",
+    "source_url": "https://hust.edu.vn/vi/tuyen-sinh/dai-hoc/de-an-tuyen-sinh-nam-2025-567354.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hust.edu.vn/vi/tuyen-sinh/dai-hoc/de-an-tuyen-sinh-nam-2025-567354.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "De an tuyen sinh nam 2025",
+        "expected_keywords": ["Dai hoc Bach khoa Ha Noi", "tuyen sinh", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "QSC",
+    "university_name": "Truong Dai hoc Cong nghe Thong tin - DHQG TP.HCM",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.uit.edu.vn",
+    "admission_url": "https://tuyensinh.uit.edu.vn",
+    "source_url": "https://tuyensinh.uit.edu.vn",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.uit.edu.vn",
+        "document_type": "admission_homepage",
+        "year": 2025,
+        "title": "Trang tuyen sinh UIT",
+        "expected_keywords": ["tuyen sinh", "UIT", "Cong nghe Thong tin"]
+      }
+    ]
+  },
+  {
+    "university_code": "NTH",
+    "university_name": "Truong Dai hoc Ngoai thuong",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://ftu.edu.vn",
+    "admission_url": "https://tuyensinh.ftu.edu.vn",
+    "source_url": "https://qldt.ftu.edu.vn/thong-bao-cac-phuong-thuc-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://qldt.ftu.edu.vn/thong-bao-cac-phuong-thuc-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "FTU phuong thuc tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["tuyen sinh", "Ngoai thuong", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "KSA",
+    "university_name": "Dai hoc Kinh te Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://ueh.edu.vn",
+    "admission_url": "https://tuyensinh.ueh.edu.vn",
+    "source_url": "https://tuyensinh.ueh.edu.vn/bai-viet/ueh-chinh-thuc-khoi-dong-mua-tuyen-sinh-dai-hoc-chinh-quy-2025-phuong-thuc-moi-nhieu-nganh-moi-hap-dan-co-hoi-du-hoc-dai-hoc-top-501-the-gioi-tai-viet-nam/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ueh.edu.vn/bai-viet/ueh-chinh-thuc-khoi-dong-mua-tuyen-sinh-dai-hoc-chinh-quy-2025-phuong-thuc-moi-nhieu-nganh-moi-hap-dan-co-hoi-du-hoc-dai-hoc-top-501-the-gioi-tai-viet-nam/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "UEH tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["UEH", "tuyen sinh", "2025", "KSA"]
+      }
+    ]
+  },
+  {
+    "university_code": "QSK",
+    "university_name": "Truong Dai hoc Kinh te - Luat - DHQG TP.HCM",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://uel.edu.vn",
+    "admission_url": "https://tuyensinh.uel.edu.vn",
+    "source_url": "https://tuyensinh.uel.edu.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-2026/",
+    "source_year": 2026,
+    "sources": [
+      {
+        "url": "https://tuyensinh.uel.edu.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-2026/",
+        "document_type": "admission_plan",
+        "year": 2026,
+        "title": "UEL tuyen sinh dai hoc chinh quy 2026",
+        "expected_keywords": ["Kinh te", "Luat", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "QST",
+    "university_name": "Truong Dai hoc Khoa hoc Tu nhien - DHQG TP.HCM",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmus.edu.vn",
+    "admission_url": "https://tuyensinh.hcmus.edu.vn",
+    "source_url": "https://tuyensinh.hcmus.edu.vn/thong-bao-ve-phuong-thuc-xet-tuyen-2-va-3-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hcmus.edu.vn/thong-bao-ve-phuong-thuc-xet-tuyen-2-va-3-nam-2025/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "HCMUS phuong thuc xet tuyen 2025",
+        "expected_keywords": ["Khoa hoc tu nhien", "2025", "xet tuyen"]
+      }
+    ]
+  },
+  {
+    "university_code": "SPH",
+    "university_name": "Truong Dai hoc Su pham Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hnue.edu.vn",
+    "admission_url": "https://tuyensinh.hnue.edu.vn",
+    "source_url": "https://tuyensinh.hnue.edu.vn/tuyensinh2025/523",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hnue.edu.vn/tuyensinh2025/523",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "HNUE xet tuyen thang dai hoc he chinh quy 2025",
+        "expected_keywords": ["Dai hoc Su pham Ha Noi", "2025", "xet tuyen"]
+      }
+    ]
+  },
+  {
+    "university_code": "DUT",
+    "university_name": "Truong Dai hoc Bach khoa - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://dut.udn.vn",
+    "admission_url": "https://tuyensinh.dut.udn.vn",
+    "source_url": "https://tuyensinh.dut.udn.vn/so-tay-tuyen-sinh",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.dut.udn.vn/so-tay-tuyen-sinh",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "DUT so tay tuyen sinh",
+        "expected_keywords": ["Bach khoa", "Da Nang", "tuyen sinh", "2025"]
+      },
+      {
+        "url": "https://tuyensinh.dut.udn.vn/cong-bo-diem-chuan",
+        "document_type": "benchmark_score",
+        "year": 2025,
+        "title": "DUT diem trung tuyen 2025",
+        "expected_keywords": ["diem", "trung tuyen", "2025", "Bach khoa"]
+      }
+    ]
+  },
+  {
+    "university_code": "SPS",
+    "university_name": "Truong Dai hoc Su pham Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmue.edu.vn",
+    "admission_url": "https://tuyensinh.hcmue.edu.vn",
+    "source_url": "https://tuyensinh.hcmue.edu.vn/index.php?id=27788&lang=vi&option=com_content&site=183&view=article",
+    "source_year": 2026,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hcmue.edu.vn/index.php?id=27788&lang=vi&option=com_content&site=183&view=article",
+        "document_type": "admission_plan",
+        "year": 2026,
+        "title": "HCMUE phuong an tuyen sinh 2026",
+        "expected_keywords": ["Su pham", "Thanh pho Ho Chi Minh", "2026", "tuyen sinh"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "TCT",
+    "university_name": "Truong Dai hoc Can Tho",
+    "type": "public",
+    "province": "Can Tho",
+    "region": "South",
+    "website": "https://www.ctu.edu.vn",
+    "admission_url": "https://tuyensinh.ctu.edu.vn",
+    "source_url": "https://tuyensinh.ctu.edu.vn/chuong-trinh-dai-tra/841-danh-muc-nganh-va-",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ctu.edu.vn/chuong-trinh-dai-tra/841-danh-muc-nganh-va-",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "CTU danh muc nganh va chi tieu 2025",
+        "expected_keywords": ["Dai hoc Can Tho", "tuyen sinh", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "BVH",
+    "university_name": "Hoc vien Cong nghe Buu chinh Vien thong",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://ptit.edu.vn",
+    "admission_url": "https://tuyensinh.ptit.edu.vn",
+    "source_url": "https://tuyensinh.ptit.edu.vn/de-an-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ptit.edu.vn/de-an-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "PTIT thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Hoc vien Cong nghe Buu chinh Vien thong", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "QHI",
+    "university_name": "Truong Dai hoc Cong nghe - DHQG Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://uet.vnu.edu.vn",
+    "admission_url": "https://uet.vnu.edu.vn/tuyen-sinh",
+    "source_url": "https://uet.vnu.edu.vn/truong-dai-hoc-cong-nghe-dhqghn-ma-truong-qhi-thong-tin-tuyen-sinh-dai-hoc-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://uet.vnu.edu.vn/truong-dai-hoc-cong-nghe-dhqghn-ma-truong-qhi-thong-tin-tuyen-sinh-dai-hoc-nam-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "UET thong tin tuyen sinh dai hoc 2025",
+        "expected_keywords": ["Truong Dai hoc Cong nghe", "QHI", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "QHT",
+    "university_name": "Truong Dai hoc Khoa hoc Tu nhien - DHQG Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hus.vnu.edu.vn",
+    "admission_url": "https://hus.vnu.edu.vn/tuyen-sinh",
+    "source_url": "https://hus.vnu.edu.vn/thong-bao/dao-tao-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-142041.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hus.vnu.edu.vn/thong-bao/dao-tao-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-142041.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUS thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Khoa hoc Tu nhien", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "KCN",
+    "university_name": "Truong Dai hoc Khoa hoc va Cong nghe Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://usth.edu.vn",
+    "admission_url": "https://tuyensinh.usth.edu.vn",
+    "source_url": "https://tuyensinh.usth.edu.vn/thong-bao-tuyen-sinh-trinh-do-dai-hoc-nam-2025-3177/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.usth.edu.vn/thong-bao-tuyen-sinh-trinh-do-dai-hoc-nam-2025-3177/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "USTH thong bao tuyen sinh trinh do dai hoc 2025",
+        "expected_keywords": ["USTH", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "NHH",
+    "university_name": "Hoc vien Ngan hang",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://www.hvnh.edu.vn",
+    "admission_url": "https://www.hvnh.edu.vn/hvnh/vi/thong-tin-tuyen-sinh",
+    "source_url": "https://www.hvnh.edu.vn/hvnh/vi/thong-tin-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-2862.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.hvnh.edu.vn/hvnh/vi/thong-tin-tuyen-sinh/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-2862.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HVNH thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Hoc vien Ngan hang", "2025", "xet tuyen"]
+      }
+    ]
+  },
+  {
+    "university_code": "TDT",
+    "university_name": "Truong Dai hoc Ton Duc Thang",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://tdtu.edu.vn",
+    "admission_url": "https://admission.tdtu.edu.vn",
+    "source_url": "https://admission.tdtu.edu.vn/dai-hoc/tuyen-sinh/phuong-thuc-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://admission.tdtu.edu.vn/dai-hoc/tuyen-sinh/phuong-thuc-2025",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "TDTU phuong thuc tuyen sinh dai hoc 2025",
+        "expected_keywords": ["Ton Duc Thang", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "FPT",
+    "university_name": "Truong Dai hoc FPT",
+    "type": "private",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://daihoc.fpt.edu.vn",
+    "admission_url": "https://daihoc.fpt.edu.vn/dai-hoc-fpt-tuyen-sinh/",
+    "source_url": "https://daihoc.fpt.edu.vn/Quy-che-tuyen-sinh-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://daihoc.fpt.edu.vn/Quy-che-tuyen-sinh-2025/",
+        "document_type": "admission_rule",
+        "year": 2025,
+        "title": "FPT quy che tuyen sinh he dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc FPT", "2025", "chi tieu"]
+      }
+    ]
+  },
+  {
+    "university_code": "KHA",
+    "university_name": "Dai hoc Kinh te Quoc dan",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://neu.edu.vn",
+    "admission_url": "https://tuyensinh.neu.edu.vn",
+    "source_url": "https://fit.neu.edu.vn/post/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://fit.neu.edu.vn/post/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "NEU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Kinh te Quoc dan", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "QHX",
+    "university_name": "Truong Dai hoc Khoa hoc Xa hoi va Nhan van - DHQG Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://ussh.vnu.edu.vn",
+    "admission_url": "https://tuyensinh.ussh.edu.vn",
+    "source_url": "https://www.ussh.vnu.edu.vn/vi/news/dao-tao/truong-dh-khxh-nv-ban-hanh-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-23362.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.ussh.vnu.edu.vn/vi/news/dao-tao/truong-dh-khxh-nv-ban-hanh-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-23362.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "USSH thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Khoa hoc Xa hoi va Nhan van", "QHX", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "GHA",
+    "university_name": "Truong Dai hoc Giao thong Van tai",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://utc.edu.vn",
+    "admission_url": "https://tuyensinh.utc.edu.vn",
+    "source_url": "https://tuyensinh.utc.edu.vn/?q=tin-tuyen-sinh%2Fth%C3%B4ng-tin-tuy%E1%BB%83n-sinh-%C4%91%E1%BA%A1i-h%E1%BB%8Dc-ch%C3%ADnh-quy-n%C4%83m-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.utc.edu.vn/?q=tin-tuyen-sinh%2Fth%C3%B4ng-tin-tuy%E1%BB%83n-sinh-%C4%91%E1%BA%A1i-h%E1%BB%8Dc-ch%C3%ADnh-quy-n%C4%83m-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "UTC thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Giao thong van tai", "GHA", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "TLA",
+    "university_name": "Truong Dai hoc Thuy loi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://tlu.edu.vn",
+    "admission_url": "https://tuyensinh.tlu.edu.vn",
+    "source_url": "https://tlu.edu.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-23333/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tlu.edu.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-23333/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "TLU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Thuy loi", "2025", "chi tieu"]
+      }
+    ]
+  },
+  {
+    "university_code": "TMA",
+    "university_name": "Truong Dai hoc Thuong mai",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://tmu.edu.vn",
+    "admission_url": "https://tuyensinh.tmu.edu.vn",
+    "source_url": "https://tmu.edu.vn/tin-tuc/de-an-tuyen-sinh-dai-hoc-nam-2025-26206",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tmu.edu.vn/tin-tuc/de-an-tuyen-sinh-dai-hoc-nam-2025-26206",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "TMU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Thuong mai", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "MBS",
+    "university_name": "Truong Dai hoc Mo Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://ou.edu.vn",
+    "admission_url": "https://tuyensinh.ou.edu.vn",
+    "source_url": "https://ou.edu.vn/tin_tuc/thong-tin-tuyen-sinh-nam-2025-truong-dh-mo-tphcm/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ou.edu.vn/tin_tuc/thong-tin-tuyen-sinh-nam-2025-truong-dh-mo-tphcm/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "OU thong tin tuyen sinh nam 2025",
+        "expected_keywords": ["Dai hoc Mo", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "HUI",
+    "university_name": "Truong Dai hoc Cong nghiep Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://iuh.edu.vn",
+    "admission_url": "https://tuyensinh.iuh.edu.vn",
+    "source_url": "https://tuyensinh.iuh.edu.vn/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.iuh.edu.vn/",
+        "document_type": "admission_homepage",
+        "year": 2025,
+        "title": "IUH trang tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Cong nghiep", "2025", "tuyen sinh"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "DDS",
+    "university_name": "Truong Dai hoc Su pham - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://ued.udn.vn",
+    "admission_url": "https://tuyensinh.ued.udn.vn",
+    "source_url": "https://tuyensinh.ued.udn.vn/index.php/2025/04/28/phuong-thuc-va-to-hop-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ued.udn.vn/index.php/2025/04/28/phuong-thuc-va-to-hop-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "UED phuong thuc va to hop tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Su pham", "Da Nang", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "XDA",
+    "university_name": "Truong Dai hoc Xay dung Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://huce.edu.vn",
+    "admission_url": "https://tuyensinh.huce.edu.vn",
+    "source_url": "https://tuyensinh.huce.edu.vn/chi-tieu-va-phuong-thuc-xet-tuyen-dai-hoc-chinh-quy-nam-2025-du-kien--1",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.huce.edu.vn/chi-tieu-va-phuong-thuc-xet-tuyen-dai-hoc-chinh-quy-nam-2025-du-kien--1",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUCE chi tieu va phuong thuc xet tuyen dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Xay dung", "2025", "chi tieu"]
+      }
+    ]
+  },
+  {
+    "university_code": "YTC",
+    "university_name": "Truong Dai hoc Y te Cong cong",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://huph.edu.vn",
+    "admission_url": "https://tuyensinh.huph.edu.vn",
+    "source_url": "https://tuyensinh.huph.edu.vn/post/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.huph.edu.vn/post/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUPH thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Y te cong cong", "YTC", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "HTC",
+    "university_name": "Hoc vien Tai chinh",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hvtc.edu.vn",
+    "admission_url": "https://tuyensinh.hvtc.edu.vn",
+    "source_url": "https://hvtc.edu.vn/6320-chi-tieu-chuong-trinh-dao-tao-Dai-hoc-chinh-quy-se-duoc-Hoc-vien-Tai-chinh-tuyen-sinh-trong-nam-2025_4338.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hvtc.edu.vn/6320-chi-tieu-chuong-trinh-dao-tao-Dai-hoc-chinh-quy-se-duoc-Hoc-vien-Tai-chinh-tuyen-sinh-trong-nam-2025_4338.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HVTC chi tieu chuong trinh dao tao dai hoc chinh quy 2025",
+        "expected_keywords": ["Hoc vien Tai chinh", "2025", "chi tieu"]
+      }
+    ]
+  },
+  {
+    "university_code": "HBT",
+    "university_name": "Hoc vien Bao chi va Tuyen truyen",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://ajc.hcma.vn",
+    "admission_url": "https://ajc.hcma.vn/tuyen-sinh-dai-hoc-chinh-quy",
+    "source_url": "https://ajc.hcma.vn/tuyen-sinh-dai-hoc-chinh-quy/thong-bao-phuong-an-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-13305.htm",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ajc.hcma.vn/tuyen-sinh-dai-hoc-chinh-quy/thong-bao-phuong-an-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-13305.htm",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "AJC phuong an tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Hoc vien Bao chi", "2025", "phuong an"]
+      }
+    ]
+  },
+  {
+    "university_code": "QSB",
+    "university_name": "Truong Dai hoc Bach khoa - DHQG TP.HCM",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmut.edu.vn",
+    "admission_url": "https://oisp.hcmut.edu.vn/tuyen-sinh",
+    "source_url": "https://oisp.hcmut.edu.vn/wp-json/wp/v2/pages?slug=thong-tin-tuyen-sinh",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://oisp.hcmut.edu.vn/wp-json/wp/v2/pages?slug=thong-tin-tuyen-sinh",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HCMUT thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Bach khoa", "QSB", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "SPK",
+    "university_name": "Truong Dai hoc Su pham Ky thuat Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmute.edu.vn",
+    "admission_url": "https://tuyensinh.hcmute.edu.vn",
+    "source_url": "https://hcmute.edu.vn/ArticleId/109c4c12-94f1-4eca-b256-597c4f7f3507/thong-bao-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hcmute.edu.vn/ArticleId/109c4c12-94f1-4eca-b256-597c4f7f3507/thong-bao-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HCMUTE thong bao tuyen sinh dai hoc he chinh quy 2025",
+        "expected_keywords": ["Su pham Ky thuat", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "DDF",
+    "university_name": "Truong Dai hoc Ngoai ngu - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://ufl.udn.vn",
+    "admission_url": "https://tuyensinh.ufl.udn.vn",
+    "source_url": "https://tuyensinh.ufl.udn.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ufl.udn.vn/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "UFL thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Ngoai ngu", "Da Nang", "2025"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "DMS",
+    "university_name": "Truong Dai hoc Tai chinh - Marketing",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.ufm.edu.vn",
+    "admission_url": "https://tuyensinh.ufm.edu.vn",
+    "source_url": "https://www.ufm.edu.vn/truong-dai-hoc-tai-chinh-marketing-cong-bo-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-1647.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.ufm.edu.vn/truong-dai-hoc-tai-chinh-marketing-cong-bo-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-1647.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "UFM thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Tai chinh", "Marketing", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DKC",
+    "university_name": "Truong Dai hoc Cong nghe Thanh pho Ho Chi Minh",
+    "type": "private",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.hutech.edu.vn",
+    "admission_url": "https://www.hutech.edu.vn/tuyensinh",
+    "source_url": "https://www.hutech.edu.vn/tuyensinh/tin-tuyen-sinh/14627106-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-cua-hutech",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.hutech.edu.vn/tuyensinh/tin-tuyen-sinh/14627106-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-cua-hutech",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUTECH thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["HUTECH", "2025", "dai hoc chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "DVL",
+    "university_name": "Truong Dai hoc Van Lang",
+    "type": "private",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.vlu.edu.vn",
+    "admission_url": "https://tuyensinh.vlu.edu.vn",
+    "source_url": "https://vlu.edu.vn/news/chinh-thuc-thong-tin-tuyen-sinh-2025-cua-truong-dai-hoc-van-lang",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://vlu.edu.vn/news/chinh-thuc-thong-tin-tuyen-sinh-2025-cua-truong-dai-hoc-van-lang",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "VLU thong tin tuyen sinh 2025",
+        "expected_keywords": ["Van Lang", "DVL", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "HSU",
+    "university_name": "Truong Dai hoc Hoa Sen",
+    "type": "private",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.hoasen.edu.vn",
+    "admission_url": "https://www.hoasen.edu.vn/tuyensinh",
+    "source_url": "https://www.hoasen.edu.vn/nguong-dau-vao-dai-hoc-hoa-sen-chinh-quy-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.hoasen.edu.vn/nguong-dau-vao-dai-hoc-hoa-sen-chinh-quy-2025/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "HSU nguong dau vao dai hoc chinh quy 2025",
+        "expected_keywords": ["Hoa Sen", "HSU", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "UEF",
+    "university_name": "Truong Dai hoc Kinh te - Tai chinh Thanh pho Ho Chi Minh",
+    "type": "private",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://www.uef.edu.vn",
+    "admission_url": "https://www.uef.edu.vn/tin-tuyen-sinh",
+    "source_url": "https://www.uef.edu.vn/tin-tuyen-sinh/uef-du-kien-xet-tuyen-04-phuong-thuc-37-nganh-voi-nhieu-suat-hoc-bong-gia-tri-nam-2025-29556",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.uef.edu.vn/tin-tuyen-sinh/uef-du-kien-xet-tuyen-04-phuong-thuc-37-nganh-voi-nhieu-suat-hoc-bong-gia-tri-nam-2025-29556",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "UEF phuong thuc tuyen sinh 2025",
+        "expected_keywords": ["UEF", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "NTT",
+    "university_name": "Truong Dai hoc Nguyen Tat Thanh",
+    "type": "private",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://ntt.edu.vn",
+    "admission_url": "https://tuyensinh.ntt.edu.vn",
+    "source_url": "https://tuyensinh.ntt.edu.vn/thong-tin-tuyen-sinh-2025-dai-hoc-nguyen-tat-thanh-p489.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ntt.edu.vn/thong-tin-tuyen-sinh-2025-dai-hoc-nguyen-tat-thanh-p489.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "NTTU thong tin tuyen sinh 2025",
+        "expected_keywords": ["Nguyen Tat Thanh", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "QSA",
+    "university_name": "Truong Dai hoc An Giang - DHQG TP.HCM",
+    "type": "public",
+    "province": "An Giang",
+    "region": "South",
+    "website": "https://www.agu.edu.vn",
+    "admission_url": "https://tuyensinh.agu.edu.vn",
+    "source_url": "https://tuyensinh.agu.edu.vn/tin-tuc/thong-bao-nop-ho-so-dang-ky-xet-tuyen-dai-hoc-hinh-thuc-dao-tao-chinh-quy-nam-2025-bo-sung-dot-2",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.agu.edu.vn/tin-tuc/thong-bao-nop-ho-so-dang-ky-xet-tuyen-dai-hoc-hinh-thuc-dao-tao-chinh-quy-nam-2025-bo-sung-dot-2",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "AGU thong bao xet tuyen dai hoc chinh quy 2025 bo sung dot 2",
+        "expected_keywords": ["Dai hoc An Giang", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "DVT",
+    "university_name": "Truong Dai hoc Tra Vinh",
+    "type": "public",
+    "province": "Tra Vinh",
+    "region": "South",
+    "website": "https://www.tvu.edu.vn",
+    "admission_url": "https://tuyensinh.tvu.edu.vn",
+    "source_url": "https://www.tvu.edu.vn/truong-dai-hoc-tra-vinh-cong-bo-cac-phuong-thuc-xet-tuyen-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.tvu.edu.vn/truong-dai-hoc-tra-vinh-cong-bo-cac-phuong-thuc-xet-tuyen-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "TVU phuong thuc xet tuyen dai hoc chinh quy 2025",
+        "expected_keywords": ["Tra Vinh", "DVT", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "TSN",
+    "university_name": "Truong Dai hoc Nha Trang",
+    "type": "public",
+    "province": "Khanh Hoa",
+    "region": "Central",
+    "website": "https://www.ntu.edu.vn",
+    "admission_url": "https://tuyensinh.ntu.edu.vn",
+    "source_url": "https://tuyensinh.ntu.edu.vn/tuyen-sinh/thong-tin-tuyen-sinh-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ntu.edu.vn/tuyen-sinh/thong-tin-tuyen-sinh-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "NTU thong tin tuyen sinh 2025",
+        "expected_keywords": ["Dai hoc Nha Trang", "TSN", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DQN",
+    "university_name": "Truong Dai hoc Quy Nhon",
+    "type": "public",
+    "province": "Binh Dinh",
+    "region": "Central",
+    "website": "https://www.qnu.edu.vn",
+    "admission_url": "https://www.qnu.edu.vn/vi/dai-hoc-1816",
+    "source_url": "https://www.qnu.edu.vn/vi/dai-hoc-1816/tb71-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.qnu.edu.vn/vi/dai-hoc-1816/tb71-thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "QNU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Quy Nhon", "DQN", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "TTN",
+    "university_name": "Truong Dai hoc Tay Nguyen",
+    "type": "public",
+    "province": "Dak Lak",
+    "region": "Central",
+    "website": "https://www.ttn.edu.vn",
+    "admission_url": "https://tuyensinh.ttn.edu.vn",
+    "source_url": "https://tuyensinh.ttn.edu.vn/2025/04/11/thongtints2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ttn.edu.vn/2025/04/11/thongtints2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "TTN thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Tay Nguyen", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "TDL",
+    "university_name": "Truong Dai hoc Da Lat",
+    "type": "public",
+    "province": "Lam Dong",
+    "region": "Central",
+    "website": "https://dlu.edu.vn",
+    "admission_url": "https://tuyensinh.dlu.edu.vn",
+    "source_url": "https://knl.dlu.edu.vn/vi/tuyen-sinh-1981/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-truong-dai-hoc-da-lat",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://knl.dlu.edu.vn/vi/tuyen-sinh-1981/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-truong-dai-hoc-da-lat",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "DLU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Da Lat", "TDL", "2025"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "MDA",
+    "university_name": "Truong Dai hoc Mo - Dia chat",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://humg.edu.vn",
+    "admission_url": "https://tuyensinh.humg.edu.vn",
+    "source_url": "https://ts.humg.edu.vn/tuyen-sinh/Pages/Thong-tin-tuyen-sinh.aspx?ItemID=7078",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ts.humg.edu.vn/tuyen-sinh/Pages/Thong-tin-tuyen-sinh.aspx?ItemID=7078",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUMG thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Mo", "Dia chat", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DCN",
+    "university_name": "Truong Dai hoc Cong nghiep Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://www.haui.edu.vn",
+    "admission_url": "https://tuyensinh.haui.edu.vn",
+    "source_url": "https://www.haui.edu.vn/vn/thong-bao/tuyen-sinh-dai-hoc-nam-2025/66572",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://www.haui.edu.vn/vn/thong-bao/tuyen-sinh-dai-hoc-nam-2025/66572",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HaUI tuyen sinh dai hoc nam 2025",
+        "expected_keywords": ["Dai hoc Cong nghiep Ha Noi", "2025", "chi tieu"]
+      }
+    ]
+  },
+  {
+    "university_code": "DDL",
+    "university_name": "Truong Dai hoc Dien luc",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://epu.edu.vn",
+    "admission_url": "https://ts.epu.edu.vn",
+    "source_url": "https://epu.edu.vn/chi-tiet-tin/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-15670.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://epu.edu.vn/chi-tiet-tin/thong-tin-tuyen-sinh-dai-hoc-chinh-quy-nam-2025-15670.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "EPU thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Dien luc", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "HHA",
+    "university_name": "Truong Dai hoc Hang hai Viet Nam",
+    "type": "public",
+    "province": "Hai Phong",
+    "region": "North",
+    "website": "https://vimaru.edu.vn",
+    "admission_url": "https://tuyensinh.vimaru.edu.vn",
+    "source_url": "https://tuyensinh.vimaru.edu.vn/tuyensinh/2025-thong-bao-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025.vmu",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.vimaru.edu.vn/tuyensinh/2025-thong-bao-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025.vmu",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "VMU thong bao tuyen sinh dai hoc he chinh quy 2025",
+        "expected_keywords": ["Hang hai Viet Nam", "2025", "chinh quy"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "QSQ",
+    "university_name": "Truong Dai hoc Quoc te - DHQG TP.HCM",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmiu.edu.vn",
+    "admission_url": "https://tuyensinh.hcmiu.edu.vn",
+    "source_url": "https://hcmiu.edu.vn/truong-dh-quoc-te-cong-bo-de-an-tuyen-sinh-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hcmiu.edu.vn/truong-dh-quoc-te-cong-bo-de-an-tuyen-sinh-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "IU thong tin tuyen sinh chinh thuc 2025",
+        "expected_keywords": ["Dai hoc Quoc te", "2025", "phuong thuc"]
+      }
+    ]
+  },
+  {
+    "university_code": "TDM",
+    "university_name": "Truong Dai hoc Thu Dau Mot",
+    "type": "public",
+    "province": "Binh Duong",
+    "region": "South",
+    "website": "https://tdmu.edu.vn",
+    "admission_url": "https://tuyensinh.tdmu.edu.vn",
+    "source_url": "https://tdmu.edu.vn/tin-tuc/tin-dao-tao/truong-dai-hoc-thu-dau-mot-cong-bo-cac-phuong-thuc-tuyen-sinh-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tdmu.edu.vn/tin-tuc/tin-dao-tao/truong-dai-hoc-thu-dau-mot-cong-bo-cac-phuong-thuc-tuyen-sinh-nam-2025",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "TDMU phuong thuc tuyen sinh nam 2025",
+        "expected_keywords": ["Thu Dau Mot", "2025", "phuong thuc"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "YHB",
+    "university_name": "Truong Dai hoc Y Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hmu.edu.vn",
+    "admission_url": "https://hmu.edu.vn",
+    "source_url": "https://apiwebhmu.hmu.edu.vn/Upload/Images/b8d583ef-aeff-459c-a08a-9363087b783d.pdf",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://apiwebhmu.hmu.edu.vn/Upload/Images/b8d583ef-aeff-459c-a08a-9363087b783d.pdf",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HMU thong tin tuyen sinh dai hoc nam 2025",
+        "expected_keywords": ["Dai hoc Y Ha Noi", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "DKH",
+    "university_name": "Truong Dai hoc Duoc Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hup.edu.vn",
+    "admission_url": "https://tuyensinh.hup.edu.vn",
+    "source_url": "https://tuyensinh.hup.edu.vn/noidung/218/THONG-TIN-TUYEN-SINH-DAI-HOC-NAM-2025-HINH-THUC-CHINH-QUY",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hup.edu.vn/noidung/218/THONG-TIN-TUYEN-SINH-DAI-HOC-NAM-2025-HINH-THUC-CHINH-QUY",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUP thong tin tuyen sinh dai hoc chinh quy 2025",
+        "expected_keywords": ["Dai hoc Duoc Ha Noi", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "HQT",
+    "university_name": "Hoc vien Ngoai giao",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://dav.edu.vn",
+    "admission_url": "https://dav.edu.vn/tuyen-sinh",
+    "source_url": "https://dav.edu.vn/thong-tin-tuyen-sinh-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://dav.edu.vn/thong-tin-tuyen-sinh-nam-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "DAV thong tin tuyen sinh nam 2025",
+        "expected_keywords": ["Hoc vien Ngoai giao", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "HNM",
+    "university_name": "Truong Dai hoc Thu do Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hnmu.edu.vn",
+    "admission_url": "https://hnmu.edu.vn/dai-hoc-chinh-quy-0",
+    "source_url": "https://hnmu.edu.vn/thong-tin-tuyen-sinh-trinh-do-dai-hoc-he-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hnmu.edu.vn/thong-tin-tuyen-sinh-trinh-do-dai-hoc-he-chinh-quy-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HNM thong tin tuyen sinh dai hoc he chinh quy 2025",
+        "expected_keywords": ["Dai hoc Thu do Ha Noi", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "MHN",
+    "university_name": "Truong Dai hoc Mo Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hou.edu.vn",
+    "admission_url": "https://tuyensinh.hou.edu.vn",
+    "source_url": "https://hou.edu.vn/tin-tuyen-sinh/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hou.edu.vn/tin-tuyen-sinh/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025/",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HOU thong bao tuyen sinh dai hoc chinh quy nam 2025",
+        "expected_keywords": ["Dai hoc Mo Ha Noi", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "DMT",
+    "university_name": "Truong Dai hoc Tai nguyen va Moi truong Ha Noi",
+    "type": "public",
+    "province": "Ha Noi",
+    "region": "North",
+    "website": "https://hunre.edu.vn",
+    "admission_url": "https://tuyensinh.hunre.edu.vn",
+    "source_url": "https://hunre.edu.vn/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://hunre.edu.vn/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUNRE thong bao tuyen sinh dai hoc chinh quy nam 2025",
+        "expected_keywords": ["Tai nguyen va Moi truong Ha Noi", "2025", "chinh quy"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "YDS",
+    "university_name": "Dai hoc Y Duoc Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://ump.edu.vn",
+    "admission_url": "https://ump.edu.vn/tuyen-sinh-dao-tao/dai-hoc",
+    "source_url": "https://ump.edu.vn/tuyen-sinh-dao-tao/dai-hoc/tuyen-sinh/8642/quy-che-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ump.edu.vn/tuyen-sinh-dao-tao/dai-hoc/tuyen-sinh/8642/quy-che-tuyen-sinh-dai-hoc-he-chinh-quy-nam-2025",
+        "document_type": "admission_rule",
+        "year": 2025,
+        "title": "UMP quy che tuyen sinh dai hoc he chinh quy nam 2025",
+        "expected_keywords": ["Y Duoc Thanh pho Ho Chi Minh", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "NLS",
+    "university_name": "Truong Dai hoc Nong Lam Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmuaf.edu.vn",
+    "admission_url": "https://ts.hcmuaf.edu.vn",
+    "source_url": "https://ts.hcmuaf.edu.vn/ts-43385-1/vn/span-style.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ts.hcmuaf.edu.vn/ts-43385-1/vn/span-style.html",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HCMUAF tuyen sinh dai hoc chinh quy nam 2025",
+        "expected_keywords": ["Nong Lam", "2025", "chinh quy"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "SGD",
+    "university_name": "Truong Dai hoc Sai Gon",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://sgu.edu.vn",
+    "admission_url": "https://tuyensinh.sgu.edu.vn",
+    "source_url": "https://tuyensinh.sgu.edu.vn/index.php",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.sgu.edu.vn/index.php",
+        "document_type": "admission_page",
+        "year": 2025,
+        "title": "SGU trang tuyen sinh dai hoc nam 2025",
+        "expected_keywords": ["Dai hoc Sai Gon", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "LPS",
+    "university_name": "Truong Dai hoc Luat Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://hcmulaw.edu.vn",
+    "admission_url": "https://ts.hcmulaw.edu.vn",
+    "source_url": "https://ts.hcmulaw.edu.vn/thong-tin-tuyen-sinh-dai-hoc/thong-bao-xet-tuyen-cac-phuong-thuc-nam-2025-620.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ts.hcmulaw.edu.vn/thong-tin-tuyen-sinh-dai-hoc/thong-bao-xet-tuyen-cac-phuong-thuc-nam-2025-620.html",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "HCMULAW thong bao xet tuyen cac phuong thuc nam 2025",
+        "expected_keywords": ["LPS", "2025", "phuong thuc"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "KTS",
+    "university_name": "Truong Dai hoc Kien truc Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://uah.edu.vn",
+    "admission_url": "https://uah.edu.vn/tuyen-sinh",
+    "source_url": "https://uah.edu.vn/tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://uah.edu.vn/tuyen-sinh-dai-hoc-chinh-quy-nam-2025",
+        "document_type": "admission_page",
+        "year": 2025,
+        "title": "UAH tuyen sinh dai hoc chinh quy nam 2025",
+        "expected_keywords": ["Kien truc", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "DCT",
+    "university_name": "Truong Dai hoc Cong Thuong Thanh pho Ho Chi Minh",
+    "type": "public",
+    "province": "TP.HCM",
+    "region": "South",
+    "website": "https://huit.edu.vn",
+    "admission_url": "https://ts.huit.edu.vn",
+    "source_url": "https://huit.edu.vn/tin-tuc-hoat-dong/thong-tin-tuyen-sinh-dai-hoc-nam-2025",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://huit.edu.vn/tin-tuc-hoat-dong/thong-tin-tuyen-sinh-dai-hoc-nam-2025",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "HUIT thong tin tuyen sinh dai hoc nam 2025",
+        "expected_keywords": ["Cong Thuong", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "DDQ",
+    "university_name": "Truong Dai hoc Kinh te - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://due.udn.vn",
+    "admission_url": "https://due.udn.vn",
+    "source_url": "https://ts.udn.vn/files/2025/2025_6_24_7_45_249_ddq_th%C3%B4ng_tin_tuy%E1%BB%83n_sinh_n%C4%83m_2025_%28m%E1%BA%ABu_b%E1%BB%99%29_24.06.2025_final.pdf",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://ts.udn.vn/files/2025/2025_6_24_7_45_249_ddq_th%C3%B4ng_tin_tuy%E1%BB%83n_sinh_n%C4%83m_2025_%28m%E1%BA%ABu_b%E1%BB%99%29_24.06.2025_final.pdf",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "DUE thong tin tuyen sinh nam 2025",
+        "expected_keywords": ["DDQ", "Kinh te", "2025"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "DSK",
+    "university_name": "Truong Dai hoc Su pham Ky thuat - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://ute.udn.vn",
+    "admission_url": "https://tuyensinh.ute.udn.vn",
+    "source_url": "https://tuyensinh.ute.udn.vn/ChuyenMuc/Thong-bao-tuyen-sinh-dai-hoc-hinh-thuc-chinh-quy-theo-phuong-thuc-xet-tuyen-sinh-rieng-theo-Quy-che-cua-Truong-Dai-hoc-Su-pham-Ky-thuat-Dai-hoc-Da-Nang-nam-2025_14437.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.ute.udn.vn/ChuyenMuc/Thong-bao-tuyen-sinh-dai-hoc-hinh-thuc-chinh-quy-theo-phuong-thuc-xet-tuyen-sinh-rieng-theo-Quy-che-cua-Truong-Dai-hoc-Su-pham-Ky-thuat-Dai-hoc-Da-Nang-nam-2025_14437.html",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "UTE Da Nang thong bao tuyen sinh theo phuong thuc rieng nam 2025",
+        "expected_keywords": ["Su pham Ky thuat", "2025", "chinh quy"],
+        "verify_ssl": false
+      }
+    ]
+  },
+  {
+    "university_code": "YDN",
+    "university_name": "Truong Dai hoc Ky thuat Y - Duoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://dhktyduocdn.edu.vn",
+    "admission_url": "https://dhktyduocdn.edu.vn/news-event/dumpt-admission",
+    "source_url": "https://dhktyduocdn.edu.vn/news-posts/dumpt-admission/dai-hoc-081c/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025--chinh-thuc--a44e",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://dhktyduocdn.edu.vn/news-posts/dumpt-admission/dai-hoc-081c/thong-bao-tuyen-sinh-dai-hoc-chinh-quy-nam-2025--chinh-thuc--a44e",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "DUMTP thong bao tuyen sinh dai hoc chinh quy nam 2025",
+        "expected_keywords": ["Ky thuat Y", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "DDT",
+    "university_name": "Dai hoc Duy Tan",
+    "type": "private",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://duytan.edu.vn",
+    "admission_url": "https://duytan.edu.vn/tuyen-sinh",
+    "source_url": "https://duytan.edu.vn/tuyen-sinh/Page/EnrollArticleViewDetail.aspx?id=1004",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://duytan.edu.vn/tuyen-sinh/Page/EnrollArticleViewDetail.aspx?id=1004",
+        "document_type": "admission_notice",
+        "year": 2025,
+        "title": "DTU xet tuyen vao dai hoc nam 2025 dot bo sung",
+        "expected_keywords": ["Duy Tan", "2025", "chinh quy"]
+      }
+    ]
+  },
+  {
+    "university_code": "KTD",
+    "university_name": "Truong Dai hoc Kien truc Da Nang",
+    "type": "private",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://dau.edu.vn",
+    "admission_url": "https://tuyensinh.dau.edu.vn",
+    "source_url": "https://tuyensinh.dau.edu.vn/truong-dai-hoc-kien-truc-da-nang-chinh-thuc-cong-bo-phuong-an-xet-tuyen-dai-hoc-nam-2025.html",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.dau.edu.vn/truong-dai-hoc-kien-truc-da-nang-chinh-thuc-cong-bo-phuong-an-xet-tuyen-dai-hoc-nam-2025.html",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "DAU phuong an xet tuyen dai hoc nam 2025",
+        "expected_keywords": ["Kien truc", "KTD", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "VKU",
+    "university_name": "Truong Dai hoc Cong nghe Thong tin va Truyen thong Viet - Han - Dai hoc Da Nang",
+    "type": "public",
+    "province": "Da Nang",
+    "region": "Central",
+    "website": "https://vku.udn.vn",
+    "admission_url": "https://vku.udn.vn/tuyen-sinh",
+    "source_url": "https://vku.udn.vn/vi/diem-moi-tuyen-sinh-2025-vku-mo-rong-co-hoi-cho-tat-ca-thi-sinh-tren-toan-quoc/",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://vku.udn.vn/vi/diem-moi-tuyen-sinh-2025-vku-mo-rong-co-hoi-cho-tat-ca-thi-sinh-tren-toan-quoc/",
+        "document_type": "admission_method",
+        "year": 2025,
+        "title": "VKU diem moi tuyen sinh nam 2025",
+        "expected_keywords": ["Viet Han", "2025", "tuyen sinh"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHY",
+    "university_name": "Truong Dai hoc Y - Duoc - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://huemed-univ.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHY",
+        "expected_keywords": ["Y - Duoc", "DHY", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHK",
+    "university_name": "Truong Dai hoc Kinh te - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://hce.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHK",
+        "expected_keywords": ["DHK", "Kinh te", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHT",
+    "university_name": "Truong Dai hoc Khoa hoc - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://husc.hueuni.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHT",
+        "expected_keywords": ["DHT", "Khoa hoc", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHF",
+    "university_name": "Truong Dai hoc Ngoai ngu - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://huflis.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHF",
+        "expected_keywords": ["DHF", "Ngoai ngu", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHS",
+    "university_name": "Truong Dai hoc Su pham - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://dhsphue.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHS",
+        "expected_keywords": ["DHS", "Su pham", "2025"]
+      }
+    ]
+  },
+  {
+    "university_code": "DHL",
+    "university_name": "Truong Dai hoc Nong Lam - Dai hoc Hue",
+    "type": "public",
+    "province": "Hue",
+    "region": "Central",
+    "website": "https://huaf.edu.vn",
+    "admission_url": "https://tuyensinh.hueuni.edu.vn",
+    "source_url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+    "source_year": 2025,
+    "sources": [
+      {
+        "url": "https://tuyensinh.hueuni.edu.vn/News/Download/10621",
+        "document_type": "admission_plan",
+        "year": 2025,
+        "title": "Hue University danh muc nganh chi tieu tuyen sinh nam 2025 - DHL",
+        "expected_keywords": ["DHL", "Nong Lam", "2025"]
+      }
+    ]
+  }
+]
