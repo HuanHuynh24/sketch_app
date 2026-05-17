@@ -5,10 +5,21 @@ export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export type RiasecGroup = "R" | "I" | "A" | "S" | "E" | "C";
-
 export type RiasecScore = Record<RiasecGroup, number>;
-
 export type RiasecStatus = "in_progress" | "completed";
+
+export type RiasecMessageType =
+  | "intro"
+  | "question_lead_in"
+  | "anchor_scenario"
+  | "adaptive_scenario"
+  | "transition"
+  | "answer"
+  | "invalid_answer"
+  | "answer_reflection"
+  | "answer_warning"
+  | "completion_lead_in"
+  | "final_result";
 
 export interface Student {
   student_id: string;
@@ -69,7 +80,7 @@ export interface RiasecSession {
 
 export interface RiasecEvidence {
   group: RiasecGroup;
-  quote: string;
+  quote: string | null;
   strength: number;
   confidence: number;
 }
@@ -91,13 +102,7 @@ export interface RiasecMessage {
   session_id: string;
   role: "assistant" | "user" | "system";
   content: string;
-  message_type:
-    | "anchor_scenario"
-    | "adaptive_scenario"
-    | "answer"
-    | "invalid_answer"
-    | "answer_warning"
-    | "final_result";
+  message_type: RiasecMessageType;
   metadata_json?: Record<string, unknown> | null;
   riasec_signal?: RiasecSignal | null;
   created_at: string;
@@ -106,6 +111,7 @@ export interface RiasecMessage {
 export interface StartRiasecResponse {
   session: RiasecSession;
   question: RiasecMessage;
+  assistant_messages: RiasecMessage[];
 }
 
 export interface SubmitAnswerResponse {
@@ -113,6 +119,7 @@ export interface SubmitAnswerResponse {
   session: RiasecSession;
   user_message: RiasecMessage;
   assistant_message: RiasecMessage | null;
+  assistant_messages: RiasecMessage[];
   dcp_id: string | null;
 }
 
@@ -230,6 +237,10 @@ function getErrorMessage(status: number, payload: unknown) {
 
       if (detail === "Invalid email or password") {
         return "Email hoặc mật khẩu không đúng.";
+      }
+
+      if (detail === "Session is not in progress") {
+        return "Bài đánh giá đã hoàn tất. Hãy xem kết quả hoặc bắt đầu lại.";
       }
 
       return detail;

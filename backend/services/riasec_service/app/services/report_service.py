@@ -1,117 +1,11 @@
-from app.schemas.llm import FinalReportResult
 from app.core.config import settings
+from app.schemas.llm import FinalReportResult
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
-
-
-RIASEC_GROUP_INFO = {
-    "R": {
-        "name": "Realistic",
-        "label": "Thực tế - Kỹ thuật",
-        "short_description": "Thích thao tác trực tiếp, thử nghiệm, thiết bị, công cụ và các việc có kết quả nhìn thấy được.",
-    },
-    "I": {
-        "name": "Investigative",
-        "label": "Nghiên cứu - Phân tích",
-        "short_description": "Thích tìm hiểu nguyên nhân, phân tích dữ liệu, đặt giả thuyết và giải quyết vấn đề bằng logic.",
-    },
-    "A": {
-        "name": "Artistic",
-        "label": "Sáng tạo - Nghệ thuật",
-        "short_description": "Thích tạo ý tưởng, thiết kế, kể chuyện, làm nội dung và thể hiện góc nhìn riêng.",
-    },
-    "S": {
-        "name": "Social",
-        "label": "Xã hội - Hỗ trợ",
-        "short_description": "Thích lắng nghe, hướng dẫn, hỗ trợ người khác và tạo kết nối trong nhóm.",
-    },
-    "E": {
-        "name": "Enterprising",
-        "label": "Lãnh đạo - Thuyết phục",
-        "short_description": "Thích dẫn dắt, thuyết phục, điều phối nguồn lực và thúc đẩy mọi người hành động.",
-    },
-    "C": {
-        "name": "Conventional",
-        "label": "Tổ chức - Quy trình",
-        "short_description": "Thích kế hoạch rõ ràng, dữ liệu có cấu trúc, kiểm tra chi tiết và vận hành ổn định.",
-    },
-}
-
-
-CAREER_GROUPS = {
-    "R": ["Kỹ thuật", "Cơ khí", "Điện - điện tử", "Tự động hóa", "Công nghệ vận hành", "Robot"],
-    "I": ["Công nghệ thông tin", "Khoa học dữ liệu", "AI", "Y sinh", "Nghiên cứu", "An toàn thông tin"],
-    "A": ["Thiết kế", "Truyền thông", "Nội dung số", "Mỹ thuật ứng dụng", "UX/UI", "Marketing sáng tạo"],
-    "S": ["Giáo dục", "Tâm lý học", "Công tác xã hội", "Y tế cộng đồng", "Tư vấn học đường"],
-    "E": ["Kinh doanh", "Marketing", "Quản trị", "Quan hệ công chúng", "Khởi nghiệp", "Quản lý dự án"],
-    "C": ["Kế toán", "Tài chính", "Phân tích nghiệp vụ", "Hành chính", "Quản trị dữ liệu", "Kiểm toán"],
-}
-
-DIGITAL_COMPETENCIES = {
-    "R": ["Tư duy kỹ thuật", "Vận hành công cụ số", "Đọc hiểu tài liệu kỹ thuật", "Thử nghiệm sản phẩm"],
-    "I": ["Phân tích dữ liệu", "Tư duy logic", "Tìm kiếm và đánh giá thông tin", "Tư duy nghiên cứu"],
-    "A": ["Sáng tạo nội dung số", "Thiết kế trải nghiệm", "Kể chuyện bằng dữ liệu", "Tư duy hình ảnh"],
-    "S": ["Giao tiếp số", "Hỗ trợ người dùng", "Làm việc nhóm trực tuyến", "Lắng nghe và phản hồi"],
-    "E": ["Quản lý dự án số", "Thuyết trình", "Tư duy sản phẩm", "Đàm phán và thuyết phục"],
-    "C": ["Quản lý dữ liệu", "Tự động hóa quy trình", "Kiểm soát chất lượng thông tin", "Tổ chức tài liệu"],
-}
-
-RECOMMENDED_MAJORS = {
-    "R": [
-        "Công nghệ kỹ thuật cơ khí",
-        "Kỹ thuật điện",
-        "Tự động hóa",
-        "Cơ điện tử",
-        "Kỹ thuật robot",
-    ],
-    "I": [
-        "Công nghệ thông tin",
-        "Khoa học dữ liệu",
-        "Trí tuệ nhân tạo",
-        "An toàn thông tin",
-        "Kỹ thuật phần mềm",
-        "Hệ thống thông tin",
-    ],
-    "A": [
-        "Thiết kế đồ họa",
-        "Truyền thông đa phương tiện",
-        "Thiết kế UX/UI",
-        "Marketing sáng tạo",
-        "Công nghệ truyền thông",
-    ],
-    "S": [
-        "Sư phạm",
-        "Tâm lý học",
-        "Công tác xã hội",
-        "Quản trị nhân lực",
-        "Y tế công cộng",
-    ],
-    "E": [
-        "Quản trị kinh doanh",
-        "Marketing",
-        "Thương mại điện tử",
-        "Kinh doanh quốc tế",
-        "Quan hệ công chúng",
-        "Quản lý dự án",
-    ],
-    "C": [
-        "Kế toán",
-        "Tài chính ngân hàng",
-        "Kiểm toán",
-        "Hệ thống thông tin quản lý",
-        "Phân tích nghiệp vụ",
-        "Quản trị văn phòng",
-    ],
-}
-
-SUITABLE_ROLES = {
-    "R": ["Kỹ thuật viên", "Kỹ sư vận hành", "Kỹ sư tự động hóa", "Nhân sự thử nghiệm sản phẩm"],
-    "I": ["Backend Developer", "Data Analyst", "AI Engineer", "Security Analyst", "Research Assistant"],
-    "A": ["UX/UI Designer", "Content Creator", "Graphic Designer", "Creative Marketer"],
-    "S": ["Giáo viên", "Chuyên viên tư vấn", "HR Executive", "Customer Success"],
-    "E": ["Product Manager", "Sales Executive", "Marketing Executive", "Business Developer", "Project Coordinator"],
-    "C": ["Business Analyst", "Data Administrator", "Kế toán viên", "Kiểm toán viên", "Operations Executive"],
-}
+from app.services.riasec_knowledge import (
+    RIASEC_GROUP_PROFILES,
+    unique_items_for_code,
+)
 
 
 class ReportService:
@@ -176,19 +70,19 @@ class ReportService:
             )
 
     def build_career_groups(self, riasec_code: str) -> list[str]:
-        return self._unique_items_for_code(CAREER_GROUPS, riasec_code)
+        return unique_items_for_code("career_groups", riasec_code)
 
     def build_digital_competencies(self, riasec_code: str) -> dict:
         return {
-            group: DIGITAL_COMPETENCIES.get(group, [])
+            group: RIASEC_GROUP_PROFILES.get(group, {}).get("digital_competencies", [])
             for group in riasec_code
         }
 
     def build_recommended_majors(self, riasec_code: str) -> list[str]:
-        return self._unique_items_for_code(RECOMMENDED_MAJORS, riasec_code)
+        return unique_items_for_code("recommended_majors", riasec_code)
 
     def build_suitable_roles(self, riasec_code: str) -> list[str]:
-        return self._unique_items_for_code(SUITABLE_ROLES, riasec_code)
+        return unique_items_for_code("suitable_roles", riasec_code)
 
     def build_result_payload(
         self,
@@ -207,19 +101,19 @@ class ReportService:
         max_value = max(settings.MAX_RIASEC_STEPS * 2, 1)
 
         axes = []
-        for group, info in RIASEC_GROUP_INFO.items():
+        for group, profile in RIASEC_GROUP_PROFILES.items():
             raw_score = round(float(scores.get(group, 0)), 4)
             confidence_value = round(float(confidence.get(group, 0)), 4)
 
             axes.append(
                 {
                     "group": group,
-                    "label": info["label"],
+                    "label": profile["label"],
                     "score": raw_score,
                     "max_score": max_value,
                     "normalized_score": round((raw_score / max_value) * 100, 2),
                     "confidence": confidence_value,
-                    "description": info["short_description"],
+                    "description": profile["description"],
                 }
             )
 
@@ -229,16 +123,21 @@ class ReportService:
             "axes": axes,
         }
 
-    def build_dominant_groups(self, scores: dict, confidence: dict, top_n: int = 3) -> list[dict]:
+    def build_dominant_groups(
+        self,
+        scores: dict,
+        confidence: dict,
+        top_n: int = 3,
+    ) -> list[dict]:
         sorted_groups = self._sort_groups_by_score(scores)
 
         return [
             {
                 "group": group,
-                "label": RIASEC_GROUP_INFO[group]["label"],
+                "label": RIASEC_GROUP_PROFILES[group]["label"],
                 "score": round(score, 4),
                 "confidence": round(float(confidence.get(group, 0)), 4),
-                "description": RIASEC_GROUP_INFO[group]["short_description"],
+                "description": RIASEC_GROUP_PROFILES[group]["description"],
             }
             for group, score in sorted_groups[:top_n]
         ]
@@ -247,22 +146,22 @@ class ReportService:
         analysis = []
 
         for group, score in self._sort_groups_by_score(scores):
-            info = RIASEC_GROUP_INFO[group]
+            profile = RIASEC_GROUP_PROFILES[group]
             level = self._score_level(score)
 
             analysis.append(
                 {
                     "group": group,
-                    "name": info["name"],
-                    "label": info["label"],
+                    "name": profile["name"],
+                    "label": profile["label"],
                     "score": round(score, 4),
                     "confidence": round(float(confidence.get(group, 0)), 4),
                     "level": level,
-                    "description": info["short_description"],
-                    "career_groups": CAREER_GROUPS.get(group, []),
-                    "recommended_majors": RECOMMENDED_MAJORS.get(group, []),
-                    "suitable_roles": SUITABLE_ROLES.get(group, []),
-                    "digital_competencies": DIGITAL_COMPETENCIES.get(group, []),
+                    "description": profile["description"],
+                    "career_groups": profile["career_groups"],
+                    "recommended_majors": profile["recommended_majors"],
+                    "suitable_roles": profile["suitable_roles"],
+                    "digital_competencies": profile["digital_competencies"],
                 }
             )
 
@@ -277,23 +176,11 @@ class ReportService:
             "digital_competencies": self.build_digital_competencies(riasec_code),
         }
 
-    def _unique_items_for_code(
-        self,
-        mapping: dict[str, list[str]],
-        riasec_code: str,
-    ) -> list[str]:
-        items = []
-
-        for group in riasec_code:
-            items.extend(mapping.get(group, []))
-
-        return list(dict.fromkeys(items))
-
     def _sort_groups_by_score(self, scores: dict) -> list[tuple[str, float]]:
         return sorted(
             [
                 (group, float(scores.get(group, 0)))
-                for group in RIASEC_GROUP_INFO
+                for group in RIASEC_GROUP_PROFILES
             ],
             key=lambda item: item[1],
             reverse=True,
@@ -322,5 +209,6 @@ class ReportService:
             f"Bạn có xu hướng phù hợp với các hoạt động liên quan đến {', '.join(career_groups)}. "
             f"Một số ngành học có thể tham khảo gồm {', '.join(majors)}. "
             f"Các vai trò nghề nghiệp phù hợp có thể là {', '.join(roles)}. "
-            f"Kết quả này là gợi ý định hướng ban đầu, nên kết hợp thêm học lực, sở thích thực tế và mục tiêu cá nhân."
+            f"Kết quả này là gợi ý định hướng ban đầu, nên kết hợp thêm học lực, "
+            f"sở thích thực tế và mục tiêu cá nhân."
         )

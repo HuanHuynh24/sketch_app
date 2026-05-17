@@ -1,10 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import HomeStartButton from "./HomeStartButton";
 import Link from "next/link";
 import {
   Brain, BarChart3, Target, GraduationCap, TrendingUp,
   Bot, Radio, Database, Backpack, Users, School,
-  Pencil, BookOpen, Star, CheckCircle2,
+  BookOpen, Star, CheckCircle2,
 } from "lucide-react";
 
 export default function Home() {
@@ -23,14 +24,10 @@ export default function Home() {
           ra lộ trình học tập và chọn trường cá nhân hóa cho từng học sinh.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
-          <Link
-            href="/signup"
-            id="hero-cta-signup"
+          <HomeStartButton
+            id="hero-cta-start"
             className="inline-flex items-center gap-2 px-10 py-4 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-xl hover:no-underline transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            <Pencil size={20} /> Bắt đầu miễn phí
-          </Link>
+          />
           <Link
             href="#how-it-works"
             id="hero-cta-learn"
@@ -207,14 +204,10 @@ export default function Home() {
         <p className="text-sketch-surface-dim text-xl mb-8">
           Gia nhập cùng <span className="text-sketch-yellow font-bold">50.000+</span> học sinh đã tìm thấy con đường của mình qua SketchApp AI.
         </p>
-        <Link
-          href="/signup"
-          id="cta-signup-btn"
+        <HomeStartButton
+          id="cta-start-btn"
           className="inline-flex items-center gap-2 px-10 py-4 text-white font-bold border-[2px] border-sketch-yellow bg-sketch-red wobbly-btn shadow-sketch-red text-xl hover:no-underline transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          <Pencil size={20} /> Đăng ký miễn phí
-        </Link>
+        />
       </section>
 
       <Footer />

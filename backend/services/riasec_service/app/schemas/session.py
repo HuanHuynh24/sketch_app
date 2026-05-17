@@ -34,6 +34,7 @@ class RiasecSessionResponse(BaseModel):
 class StartSessionResponse(BaseModel):
     session: RiasecSessionResponse
     question: MessageResponse
+    assistant_messages: list[MessageResponse] = Field(default_factory=list)
 
 
 class SubmitAnswerResponse(BaseModel):
@@ -41,4 +42,5 @@ class SubmitAnswerResponse(BaseModel):
     session: RiasecSessionResponse
     user_message: MessageResponse
     assistant_message: MessageResponse | None = None
+    assistant_messages: list[MessageResponse] = Field(default_factory=list)
     dcp_id: UUID | None = None

@@ -16,6 +16,7 @@ from app.repositories.score_snapshot_repository import ScoreSnapshotRepository
 from app.repositories.session_repository import SessionRepository
 from app.services.adaptive_engine import AdaptiveEngine
 from app.services.answer_quality_service import AnswerQualityService
+from app.services.conversation_style_service import ConversationStyleService
 from app.services.question_generation_service import QuestionGenerationService
 from app.services.question_policy import QuestionPolicy
 from app.services.report_service import ReportService
@@ -33,6 +34,7 @@ class SessionService:
         self.adaptive_engine = AdaptiveEngine()
         self.report_service = ReportService()
         self.answer_quality_service = AnswerQualityService()
+        self.conversation_style_service = ConversationStyleService()
         self.question_generation_service = QuestionGenerationService()
         self.question_policy = QuestionPolicy()
 
@@ -49,6 +51,16 @@ class SessionService:
 
     async def start_session(self, student_id: UUID):
         session = self.session_repo.create(student_id)
+        intro_messages = [
+            self.message_repo.create(
+                session_id=session.session_id,
+                role=MESSAGE_ROLE_ASSISTANT,
+                content=item["content"],
+                message_type=item["message_type"],
+                metadata_json=item.get("metadata_json"),
+            )
+            for item in self.conversation_style_service.build_opening_messages()
+        ]
         question_data = await self.question_generation_service.generate_anchor_question()
 
         question = self.message_repo.create(
@@ -62,6 +74,10 @@ class SessionService:
         return {
             "session": session,
             "question": question,
+            "assistant_messages": [
+                *intro_messages,
+                question,
+            ],
         }
 
     async def submit_answer(
@@ -162,6 +178,7 @@ class SessionService:
         return await self._continue_session(
             session=session,
             user_message=user_message,
+            scoring_result=scoring_result,
         )
 
     def _save_invalid_answer_warning(
@@ -181,6 +198,15 @@ class SessionService:
             },
         )
 
+        lead_in_data = self.conversation_style_service.build_invalid_answer_lead_in()
+        lead_in_message = self.message_repo.create(
+            session_id=session.session_id,
+            role=MESSAGE_ROLE_ASSISTANT,
+            content=lead_in_data["content"],
+            message_type=lead_in_data["message_type"],
+            metadata_json=lead_in_data.get("metadata_json"),
+        )
+
         warning_message = self.message_repo.create(
             session_id=session.session_id,
             role=MESSAGE_ROLE_ASSISTANT,
@@ -197,6 +223,10 @@ class SessionService:
             "session": session,
             "user_message": user_message,
             "assistant_message": warning_message,
+            "assistant_messages": [
+                lead_in_message,
+                warning_message,
+            ],
             "dcp_id": None,
         }
 
@@ -244,6 +274,17 @@ class SessionService:
             riasec_code=session.riasec_code,
         )
 
+        lead_in_data = self.conversation_style_service.build_completion_lead_in(
+            session.riasec_code
+        )
+        lead_in_message = self.message_repo.create(
+            session_id=session.session_id,
+            role=MESSAGE_ROLE_ASSISTANT,
+            content=lead_in_data["content"],
+            message_type=lead_in_data["message_type"],
+            metadata_json=lead_in_data.get("metadata_json"),
+        )
+
         assistant_message = self.message_repo.create(
             session_id=session.session_id,
             role=MESSAGE_ROLE_ASSISTANT,
@@ -266,6 +307,10 @@ class SessionService:
             "session": session,
             "user_message": user_message,
             "assistant_message": assistant_message,
+            "assistant_messages": [
+                lead_in_message,
+                assistant_message,
+            ],
             "dcp_id": profile.dcp_id,
         }
 
@@ -273,6 +318,7 @@ class SessionService:
         self,
         session,
         user_message,
+        scoring_result,
     ) -> dict:
         history = self.message_repo.list_by_session(session.session_id)
         asked_focus_groups = self.question_policy.extract_asked_focus_groups(history)
@@ -294,6 +340,19 @@ class SessionService:
             question_number=session.current_step + 1,
         )
 
+        transition_data = self.conversation_style_service.build_transition_message(
+            scoring_result=scoring_result,
+            current_step=session.current_step,
+            max_steps=session.max_steps,
+        )
+        transition_message = self.message_repo.create(
+            session_id=session.session_id,
+            role=MESSAGE_ROLE_ASSISTANT,
+            content=transition_data["content"],
+            message_type=transition_data["message_type"],
+            metadata_json=transition_data.get("metadata_json"),
+        )
+
         assistant_message = self.message_repo.create(
             session_id=session.session_id,
             role=MESSAGE_ROLE_ASSISTANT,
@@ -307,6 +366,10 @@ class SessionService:
             "session": session,
             "user_message": user_message,
             "assistant_message": assistant_message,
+            "assistant_messages": [
+                transition_message,
+                assistant_message,
+            ],
             "dcp_id": None,
         }
 

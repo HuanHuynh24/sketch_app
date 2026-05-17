@@ -4,75 +4,10 @@ from app.core.constants import RIASEC_GROUPS
 from app.schemas.scoring import RiasecEvidence, RiasecScoringResult, RiasecScore
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
+from app.services.riasec_knowledge import RIASEC_GROUP_PROFILES
 
 
 logger = logging.getLogger(__name__)
-
-
-RIASEC_KEYWORDS = {
-    "R": [
-        "máy móc",
-        "thiết bị",
-        "lắp đặt",
-        "sửa chữa",
-        "vận hành",
-        "thực hành",
-        "kỹ thuật",
-        "công cụ",
-    ],
-    "I": [
-    "phân tích",
-    "dữ liệu",
-    "logic",
-    "nghiên cứu",
-    "tìm hiểu",
-    "so sánh",
-    "đánh giá",
-    "kiểm chứng",
-    "giả thuyết",
-    "bằng chứng",
-],
-    "A": [
-        "sáng tạo",
-        "thiết kế",
-        "ý tưởng",
-        "nội dung",
-        "mỹ thuật",
-        "hình ảnh",
-        "truyền thông sáng tạo",
-    ],
-    "S": [
-        "giúp đỡ",
-        "hỗ trợ",
-        "tư vấn",
-        "hướng dẫn",
-        "giảng dạy",
-        "lắng nghe",
-        "kết nối",
-    ],
-    "E": [
-        "quản lý",
-        "lãnh đạo",
-        "thuyết phục",
-        "kinh doanh",
-        "đàm phán",
-        "điều phối nhóm",
-        "khởi nghiệp",
-    ],
-    "C": [
-    "quy trình",
-    "kế hoạch",
-    "sắp xếp",
-    "kiểm tra",
-    "chính xác",
-    "hồ sơ",
-    "báo cáo",
-    "theo dõi",
-    "checklist",
-    "phân loại",
-    "chuẩn hóa",
-],
-}
 
 
 class ScoringEngine:
@@ -140,13 +75,13 @@ class ScoringEngine:
         text = answer_text.lower()
 
         scores = {key: 0.0 for key in RIASEC_GROUPS}
-        detected_traits = []
+        detected_traits_by_group = {key: [] for key in RIASEC_GROUPS}
 
-        for group, keywords in RIASEC_KEYWORDS.items():
-            for keyword in keywords:
+        for group, profile in RIASEC_GROUP_PROFILES.items():
+            for keyword in profile["keywords"]:
                 if keyword in text:
                     scores[group] += 0.5
-                    detected_traits.append(keyword)
+                    detected_traits_by_group[group].append(keyword)
 
         scores = {
             key: min(value, 2.0)
@@ -166,7 +101,7 @@ class ScoringEngine:
         evidence = [
             RiasecEvidence(
                 group=group,
-                quote=", ".join(detected_traits[:3]) or None,
+                quote=", ".join(detected_traits_by_group[group][:3]) or None,
                 strength=scores[group],
                 confidence=confidence[group],
             )
@@ -174,11 +109,18 @@ class ScoringEngine:
             if scores[group] > 0
         ]
 
+        detected_traits = []
+        for traits in detected_traits_by_group.values():
+            detected_traits.extend(traits)
+
         return RiasecScoringResult(
             scores=RiasecScore(**scores),
             confidence=RiasecScore(**confidence),
-            reasoning="Fallback rule-based scoring do Gemini không khả dụng hoặc trả dữ liệu không hợp lệ.",
-            detected_traits=list(set(detected_traits)),
+            reasoning=(
+                "Fallback rule-based scoring dựa trên bộ tín hiệu RIASEC nội bộ "
+                "do Gemini không khả dụng hoặc trả dữ liệu không hợp lệ."
+            ),
+            detected_traits=list(dict.fromkeys(detected_traits)),
             primary_groups=primary_groups,
             evidence=evidence,
         )
@@ -193,7 +135,8 @@ class ScoringEngine:
 
         for group in RIASEC_GROUPS:
             merged[group] = round(
-                float(current_scores.get(group, 0)) + float(new_scores.get(group, 0)) * weight,
+                float(current_scores.get(group, 0))
+                + float(new_scores.get(group, 0)) * weight,
                 4,
             )
 
