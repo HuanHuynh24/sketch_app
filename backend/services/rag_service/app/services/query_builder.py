@@ -52,7 +52,11 @@ class QueryBuilderService:
         """
         Simple heuristic-based query builder if LLM fails or is disabled.
         """
-        majors = riasec_result.get("majors", [])
+        majors = (
+            riasec_result.get("recommended_majors")
+            or riasec_result.get("career_recommendations", {}).get("recommended_majors")
+            or riasec_result.get("majors", [])
+        )
         major_str = " ".join(majors[:2])
         
         target_province = student_profile.get("target_country") or student_profile.get("target_province", "")

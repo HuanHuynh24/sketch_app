@@ -7,7 +7,7 @@ class SearchQueryModel(BaseModel):
     """
     optimized_query: str = Field(
         ...,
-        description="The main search query string optimized for Tavily or Vector Search."
+        description="The main semantic search query optimized for pgvector."
     )
     target_countries: list[str] = Field(
         ...,

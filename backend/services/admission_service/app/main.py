@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import health, programs
+from app.api import health, recommendations
 from app.core.config import settings
 from app.core.database import init_schema
 
@@ -20,9 +20,9 @@ app.include_router(
 )
 
 app.include_router(
-    programs.router,
+    recommendations.router,
     prefix=settings.API_PREFIX,
-    tags=["University Programs"],
+    tags=["University Recommendations"],
 )
 
 

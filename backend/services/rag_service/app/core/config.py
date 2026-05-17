@@ -18,7 +18,12 @@ class Settings(BaseSettings):
     
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = "gemini-2.5-flash"
-    TAVILY_API_KEY: str | None = None
+    GEMINI_EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+    RAG_DATA_DIR: str = "/data"
+    RAG_AUTO_INGEST_ON_STARTUP: bool = False
+    RAG_CHUNK_SIZE: int = 2800
+    RAG_CHUNK_OVERLAP: int = 300
+    RAG_EMBEDDING_BATCH_SIZE: int = 32
 
     model_config = SettingsConfigDict(
         env_file=".env",

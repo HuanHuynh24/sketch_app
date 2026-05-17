@@ -6,6 +6,7 @@ import httpx
 import asyncio
 from pydantic import BaseModel
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.services.search_engine import SearchEngine
 
@@ -49,14 +50,14 @@ async def search_universities_endpoint(
             tasks = []
             
             # Task 1: Lấy Profile (Student Info)
-            tasks.append(client.get("http://profile_service:8000/api/profile/students/me", headers=headers))
+            tasks.append(client.get(f"{settings.PROFILE_SERVICE_URL}/api/profile/students/me", headers=headers))
             
             # Task 2: Lấy Academic Record
-            tasks.append(client.get("http://profile_service:8000/api/profile/students/me/academic-record", headers=headers))
+            tasks.append(client.get(f"{settings.PROFILE_SERVICE_URL}/api/profile/students/me/academic-record", headers=headers))
             
             # Task 3: Lấy RIASEC (nếu có dcp_id)
             if payload.dcp_id:
-                tasks.append(client.get(f"http://riasec_service:8000/api/riasec/profiles/{payload.dcp_id}", headers=headers))
+                tasks.append(client.get(f"{settings.RIASEC_SERVICE_URL}/api/riasec/profiles/{payload.dcp_id}", headers=headers))
                 
             responses = await asyncio.gather(*tasks, return_exceptions=True)
             
