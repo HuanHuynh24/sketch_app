@@ -21,6 +21,9 @@ def init_schema():
         connection.execute(
             text(f'CREATE SCHEMA IF NOT EXISTS "{settings.DB_SCHEMA}"')
         )
+        connection.execute(
+            text('CREATE EXTENSION IF NOT EXISTS vector;')
+        )
 
 
 def get_db():

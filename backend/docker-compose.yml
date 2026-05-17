@@ -1,6 +1,6 @@
 services:
   postgres_db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: ms_postgres
     restart: always
     env_file: .env
@@ -84,11 +84,15 @@ services:
       - API_PREFIX=/api/rag
       - DB_SCHEMA=rag
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:${POSTGRES_PORT}/${POSTGRES_DB}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PYTHONDONTWRITEBYTECODE=1
     ports:
       - "8004:8000"
     volumes:
       - ./services/rag_service:/app
+      - chroma_data:/app/chroma_data
     depends_on:
       - postgres_db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -117,6 +121,7 @@ services:
 
 volumes:
   postgres_data:
+  chroma_data:
 
 networks:
   default:

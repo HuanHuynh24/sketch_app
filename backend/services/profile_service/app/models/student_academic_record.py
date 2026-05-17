@@ -21,12 +21,21 @@ class StudentAcademicRecord(Base, SchemaMixin):
         index=True,
     )
 
-    grade_10_avg = Column(Float, nullable=True)
-    grade_11_avg = Column(Float, nullable=True)
-    grade_12_avg = Column(Float, nullable=True)
+    # Các môn bắt buộc
+    score_math = Column(Float, nullable=True)
+    score_literature = Column(Float, nullable=True)
 
-    exam_scores = Column(JSONB, nullable=False, default=dict)
-    exam_type = Column(String(20), nullable=False)
+    # 2 môn tự chọn
+    optional_subject_1 = Column(String(50), nullable=True)
+    score_optional_1 = Column(Float, nullable=True)
+    
+    optional_subject_2 = Column(String(50), nullable=True)
+    score_optional_2 = Column(Float, nullable=True)
+
+    # Chứng chỉ tiếng Anh
+    ielts_score = Column(Float, nullable=True)
+    toeic_score = Column(Integer, nullable=True)
+    
     exam_year = Column(Integer, nullable=False)
 
     updated_at = Column(

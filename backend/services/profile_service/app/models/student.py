@@ -7,6 +7,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     func,
+    Integer,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import Base, SchemaMixin
@@ -26,6 +27,8 @@ class Student(Base, SchemaMixin):
     area_code = Column(String(5), nullable=False)
     priority_group = Column(String(10), nullable=True)
     target_province = Column(String(100), nullable=True)
+    target_country = Column(String(100), nullable=True)
+    target_budget = Column(Integer, nullable=True)
 
     is_active = Column(Boolean, nullable=False, default=True)
     is_verified = Column(Boolean, nullable=False, default=False)
