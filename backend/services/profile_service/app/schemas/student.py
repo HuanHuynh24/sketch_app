@@ -14,6 +14,8 @@ class StudentRegisterRequest(BaseModel):
     dob: Optional[date] = None
     priority_group: Optional[str] = Field(default=None, max_length=10)
     target_province: Optional[str] = Field(default=None, max_length=100)
+    target_country: Optional[str] = Field(default=None, max_length=100)
+    target_budget: Optional[int] = Field(default=None, ge=0)
 
 
 class StudentUpdateRequest(BaseModel):
@@ -23,6 +25,8 @@ class StudentUpdateRequest(BaseModel):
     area_code: Optional[str] = Field(default=None, min_length=1, max_length=5)
     priority_group: Optional[str] = Field(default=None, max_length=10)
     target_province: Optional[str] = Field(default=None, max_length=100)
+    target_country: Optional[str] = Field(default=None, max_length=100)
+    target_budget: Optional[int] = Field(default=None, ge=0)
 
     @model_validator(mode="before")
     @classmethod
@@ -52,6 +56,8 @@ class StudentResponse(BaseModel):
     area_code: str
     priority_group: Optional[str]
     target_province: Optional[str]
+    target_country: Optional[str]
+    target_budget: Optional[int]
     is_active: bool
     is_verified: bool
     created_at: datetime

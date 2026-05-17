@@ -27,12 +27,15 @@ class AcademicRecordRepository:
     ) -> StudentAcademicRecord:
         record = StudentAcademicRecord(
             student_id=student_id,
-            grade_10_avg=data.grade_10_avg,
-            grade_11_avg=data.grade_11_avg,
-            grade_12_avg=data.grade_12_avg,
-            exam_scores=data.exam_scores,
-            exam_type=data.exam_type,
+            score_math=data.score_math,
+            score_literature=data.score_literature,
+            optional_subject_1=data.optional_subject_1,
+            score_optional_1=data.score_optional_1,
+            optional_subject_2=data.optional_subject_2,
+            score_optional_2=data.score_optional_2,
             exam_year=data.exam_year,
+            ielts_score=data.ielts_score,
+            toeic_score=data.toeic_score,
         )
 
         self.db.add(record)
@@ -54,12 +57,15 @@ class AcademicRecordRepository:
         record: StudentAcademicRecord,
         data: AcademicRecordUpsertRequest,
     ) -> StudentAcademicRecord:
-        record.grade_10_avg = data.grade_10_avg
-        record.grade_11_avg = data.grade_11_avg
-        record.grade_12_avg = data.grade_12_avg
-        record.exam_scores = data.exam_scores
-        record.exam_type = data.exam_type
+        record.score_math = data.score_math
+        record.score_literature = data.score_literature
+        record.optional_subject_1 = data.optional_subject_1
+        record.score_optional_1 = data.score_optional_1
+        record.optional_subject_2 = data.optional_subject_2
+        record.score_optional_2 = data.score_optional_2
         record.exam_year = data.exam_year
+        record.ielts_score = data.ielts_score
+        record.toeic_score = data.toeic_score
 
         try:
             self.db.commit()

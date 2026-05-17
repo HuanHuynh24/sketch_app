@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.models.base import Base
 
 # Import models của service tại đây sau khi tạo model.
+import app.models
 # Ví dụ:
 # from app.models.user import User
 # from app.models.question import Question

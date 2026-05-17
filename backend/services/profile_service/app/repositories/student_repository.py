@@ -38,6 +38,8 @@ class StudentRepository:
             area_code=data.area_code,
             priority_group=data.priority_group,
             target_province=data.target_province,
+            target_country=data.target_country,
+            target_budget=data.target_budget,
         )
 
         self.db.add(student)
