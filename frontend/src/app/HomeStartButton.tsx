@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { getAccessToken } from "@/lib/api";
 
 type HomeStartButtonProps = {
   id: string;
-  className: string;
+  className?: string;
 };
 
 export default function HomeStartButton({ id, className }: HomeStartButtonProps) {
@@ -21,10 +21,10 @@ export default function HomeStartButton({ id, className }: HomeStartButtonProps)
       type="button"
       id={id}
       onClick={handleStart}
-      className={className}
-      style={{ fontFamily: "var(--font-heading)" }}
+      className={`btn-premium inline-flex items-center justify-center gap-2 px-8 py-4 text-white text-lg transition-all ${className}`}
     >
-      <Pencil size={20} /> Bắt đầu ngay
+      <Sparkles size={20} className="animate-pulse-glow" /> 
+      <span>Bắt đầu ngay</span>
     </button>
   );
 }

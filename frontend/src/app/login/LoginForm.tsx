@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, HelpCircle, ArrowRight } from "lucide-react";
+import { Mail, Lock, HelpCircle, ArrowRight, LoaderCircle } from "lucide-react";
 import { ApiError, loginStudent } from "@/lib/api";
 
 export default function LoginForm() {
@@ -25,7 +25,7 @@ export default function LoginForm() {
         password,
       });
 
-      router.push("/chat");
+      router.push("/profile");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -40,66 +40,61 @@ export default function LoginForm() {
   return (
     <form className="flex flex-col gap-6" onSubmit={handleSubmit} id="login-form">
       {/* Email */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="login-email"
-          className="flex items-center gap-1.5 font-bold text-sketch-ink"
-          style={{ fontFamily: "var(--font-heading)", fontSize: 18 }}
+          className="flex items-center gap-2 font-bold text-[#94a3b8] text-sm uppercase tracking-wider"
         >
-          <Mail size={18} /> Email
+          <Mail size={16} className="text-[#06b6d4]" /> Email truy cập
         </label>
         <input
           id="login-email"
           type="email"
-          placeholder="your-sketch@email.com"
+          placeholder="your.name@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isSubmitting}
           required
-          className="bg-transparent border-0 border-b-[3px] border-sketch-ink px-0 py-3 text-lg outline-none focus:border-sketch-blue transition-colors duration-150 placeholder:text-sketch-muted placeholder:italic"
-          style={{ fontFamily: "var(--font-body)" }}
+          className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#06b6d4]/50 focus:bg-white/5 transition-all duration-300 placeholder:text-white/20 shadow-inner"
         />
       </div>
 
       {/* Password */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="login-password"
-          className="flex items-center gap-1.5 font-bold text-sketch-ink"
-          style={{ fontFamily: "var(--font-heading)", fontSize: 18 }}
+          className="flex items-center justify-between gap-2 font-bold text-[#94a3b8] text-sm uppercase tracking-wider"
         >
-          <Lock size={18} /> Password
+          <span className="flex items-center gap-2">
+             <Lock size={16} className="text-[#c084fc]" /> Mật khẩu
+          </span>
+          <Link
+            href="#"
+            className="inline-flex items-center gap-1 text-xs text-[#06b6d4] hover:text-white transition-colors"
+          >
+            Quên mật khẩu?
+          </Link>
         </label>
         <input
           id="login-password"
           type="password"
-          placeholder="your secret doodle..."
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isSubmitting}
           required
-          className="bg-transparent border-0 border-b-[3px] border-sketch-ink px-0 py-3 text-lg outline-none focus:border-sketch-blue transition-colors duration-150 placeholder:text-sketch-muted placeholder:italic"
-          style={{ fontFamily: "var(--font-body)" }}
+          className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#c084fc]/50 focus:bg-white/5 transition-all duration-300 placeholder:text-white/20 shadow-inner tracking-widest"
         />
       </div>
 
-      {/* Forgot */}
-      <div className="text-right">
-        <Link
-          href="#"
-          className="inline-flex items-center gap-1 text-base text-sketch-red hover:no-underline hover:opacity-80"
-        >
-          <HelpCircle size={14} /> Forgot Pass?
-        </Link>
-      </div>
-
       {error && (
-        <p
+        <div
           role="alert"
-          className="border-[2px] border-sketch-error bg-red-50 px-4 py-2 text-sketch-error"
+          className="flex items-center gap-3 bg-[#f43f5e]/10 border border-[#f43f5e]/30 px-4 py-3 rounded-xl text-[#f43f5e] text-sm font-medium animate-pulse-slow"
         >
-          {error}
-        </p>
+          <HelpCircle size={18} />
+          <p>{error}</p>
+        </div>
       )}
 
       {/* Submit */}
@@ -108,10 +103,13 @@ export default function LoginForm() {
         id="login-submit-btn"
         disabled={isSubmitting}
         aria-busy={isSubmitting}
-        className="w-full inline-flex items-center justify-center gap-2 py-3 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
-        style={{ fontFamily: "var(--font-heading)" }}
+        className="w-full mt-4 btn-premium py-4"
       >
-        <ArrowRight size={18} /> {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+        {isSubmitting ? (
+          <span className="flex items-center gap-2"><LoaderCircle className="animate-spin" size={18} /> Đang xác thực...</span>
+        ) : (
+          <span className="flex items-center justify-center gap-2 text-lg">Khởi động Hành trình <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></span>
+        )}
       </button>
     </form>
   );

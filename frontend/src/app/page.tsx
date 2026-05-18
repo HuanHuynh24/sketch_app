@@ -4,213 +4,121 @@ import HomeStartButton from "./HomeStartButton";
 import Link from "next/link";
 import {
   Brain, BarChart3, Target, GraduationCap, TrendingUp,
-  Bot, Radio, Database, Backpack, Users, School,
-  BookOpen, Star, CheckCircle2,
+  Bot, Database, ShieldCheck, Zap, LineChart,
+  Compass, Sparkles, ChevronRight, Activity, Globe, Stars
 } from "lucide-react";
+import InteractiveHero from "@/components/InteractiveHero";
 
 export default function Home() {
   return (
-    <>
+    <div className="relative overflow-hidden bg-[#030014] text-white selection:bg-[#06b6d4] selection:text-white">
+      {/* Background Deep Space Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[1000px] h-[1000px] rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.15)_0%,transparent_60%)] animate-pulse-slow pointer-events-none" />
+      <div className="absolute top-[20%] right-[-20%] w-[1200px] h-[1200px] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.1)_0%,transparent_60%)] pointer-events-none" />
+      
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
+
       <Navbar />
 
-      {/* Hero */}
-      <section id="hero" className="text-center py-16 px-8 relative">
-        <h1 className="-rotate-1 mb-4">
-          Chọn đúng ngành,{" "}
-          <span className="highlight">Sáng tương lai</span>
-        </h1>
-        <p className="text-sketch-muted text-xl max-w-2xl mx-auto mb-8" style={{ fontFamily: "var(--font-body)" }}>
-          Hệ thống hướng nghiệp thông minh phân tích năng lực đa chiều để đưa
-          ra lộ trình học tập và chọn trường cá nhân hóa cho từng học sinh.
-        </p>
-        <div className="flex gap-4 justify-center flex-wrap">
-          <HomeStartButton
-            id="hero-cta-start"
-            className="inline-flex items-center gap-2 px-10 py-4 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-xl hover:no-underline transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
-          />
-          <Link
-            href="#how-it-works"
-            id="hero-cta-learn"
-            className="inline-flex items-center gap-2 px-10 py-4 font-bold border-[2px] border-sketch-ink bg-sketch-surface wobbly-btn shadow-sketch text-xl hover:no-underline transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            <BookOpen size={20} /> Tìm hiểu thêm
-          </Link>
-        </div>
-      </section>
+      {/* --- HERO SECTION --- */}
+      <InteractiveHero />
 
-      <hr className="hand-drawn-hr" />
-
-      {/* Pain Points */}
-      <section id="pain-points" className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-center mb-10 rotate-[0.5deg]">Bạn có đang cảm thấy như thế này?</h2>
-        <div className="max-w-2xl mx-auto space-y-3">
-          {[
-            "Em thích vẽ nhưng bố mẹ muốn em học Kinh tế vì dễ xin việc.",
-            "Ngành CNTT lấy điểm cao quá, không biết em có cửa đỗ không?",
-            "Có quá nhiều trường, em không biết chọn trường nào phù hợp nhất.",
-            "Sợ học xong ra trường lại thất nghiệp hoặc làm trái ngành.",
-            "Cảm thấy lạc lõng vì không biết bản thân mình thực sự giỏi cái gì.",
-          ].map((text) => (
-            <div
-              key={text}
-              className="italic px-5 py-3 border-l-4 border-sketch-red bg-red-50/50 rounded-r-lg -rotate-[0.3deg] text-lg"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
-              &ldquo;{text}&rdquo;
+      {/* --- MARQUEE --- */}
+      <div className="w-full border-y border-white/10 bg-black/50 backdrop-blur-md py-10 overflow-hidden my-12 relative z-20 flex flex-col gap-6">
+        {/* Forward Marquee */}
+        <div className="animate-marquee whitespace-nowrap font-black text-4xl md:text-5xl tracking-[0.2em] uppercase flex items-center">
+          {[1, 2].map((i) => (
+            <div key={`fw-${i}`} className="flex">
+              <span className="mx-12 flex items-center gap-6 text-white drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"><Stars size={40} className="text-[#06b6d4]"/> AI ASSESSMENT</span>
+              <span className="mx-12 flex items-center gap-6 text-stroke-glass hover:text-white"><Database size={40} className="text-[#8b5cf6]"/> BIG DATA ANALYTICS</span>
+              <span className="mx-12 flex items-center gap-6 text-white drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"><Target size={40} className="text-[#f43f5e]"/> PREDICTIVE MODEL</span>
+              <span className="mx-12 flex items-center gap-6 text-stroke-glass hover:text-white"><ShieldCheck size={40} className="text-emerald-400"/> 98% ACCURACY</span>
             </div>
           ))}
         </div>
-        <p className="text-center text-sketch-muted text-xl max-w-2xl mx-auto mt-10">
-          Đừng để cảm xúc nhất thời hay áp lực gia đình dẫn dắt tương lai. Hãy để{" "}
-          <span className="highlight">Dữ liệu thực tế</span> giúp bạn quyết định.
-        </p>
-      </section>
-
-      <hr className="hand-drawn-hr" />
-
-      {/* Features */}
-      <section id="features" className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-center mb-10 -rotate-[0.5deg]">Chúng tôi giúp bạn như thế nào?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { id: "feature-1", icon: <Brain size={40} strokeWidth={1.5} />, title: "Hiểu bạn là ai", desc: 'AI đánh giá đa chiều: Logic, EQ, Sáng tạo và tính cách để tìm ra "vùng an toàn" và "vùng phát triển" của bạn.', rotate: "rotate-[1deg]" },
-            { id: "feature-2", icon: <BarChart3 size={40} strokeWidth={1.5} />, title: "Dữ liệu thật", desc: "Phân tích hàng triệu điểm dữ liệu tuyển sinh từ các trường Đại học trong 10 năm qua để đưa ra dự báo chính xác.", rotate: "-rotate-[1deg]" },
-            { id: "feature-3", icon: <Target size={40} strokeWidth={1.5} />, title: "Chiến lược rõ ràng", desc: "Cung cấp lộ trình ôn thi, các môn cần tập trung và danh sách nguyện vọng thông minh để tối ưu khả năng đỗ.", rotate: "rotate-[1deg]" },
-          ].map(({ id, icon, title, desc, rotate }) => (
-            <div
-              key={id}
-              id={id}
-              className={`relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 text-center tape transition-all duration-200 hover:-translate-y-1 hover:shadow-sketch-lg ${rotate}`}
-            >
-              <div className="flex justify-center mb-4 text-sketch-blue">{icon}</div>
-              <h3 className="text-sketch-blue mb-2">{title}</h3>
-              <p className="text-sketch-muted">{desc}</p>
+        {/* Reverse Marquee */}
+        <div className="animate-marquee-reverse whitespace-nowrap font-black text-4xl md:text-5xl tracking-[0.2em] uppercase flex items-center opacity-70">
+          {[1, 2].map((i) => (
+            <div key={`rev-${i}`} className="flex">
+              <span className="mx-12 flex items-center gap-6 text-stroke-glass hover:text-white"><Brain size={40} className="text-[#06b6d4]"/> DEEP LEARNING</span>
+              <span className="mx-12 flex items-center gap-6 text-white drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"><TrendingUp size={40} className="text-[#8b5cf6]"/> REALTIME INSIGHTS</span>
+              <span className="mx-12 flex items-center gap-6 text-stroke-glass hover:text-white"><GraduationCap size={40} className="text-[#f43f5e]"/> ADMISSION 2025</span>
+              <span className="mx-12 flex items-center gap-6 text-white drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><Zap size={40} className="text-emerald-400"/> SMART CHOICES</span>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="section-alt-bg py-16 px-8">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center mb-10">Hành trình 3 bước</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { id: "step-1", num: "01", title: "AI Assessment", desc: "Làm bài kiểm tra năng lực toàn diện: Logic, Ngôn ngữ, EQ, Sáng tạo.", rotate: "-rotate-[1deg]" },
-              { id: "step-2", num: "02", title: "Recommendations", desc: "AI đối chiếu năng lực với 6 nhóm nghề nghiệp RIASEC để tìm ngành phù hợp.", rotate: "rotate-[1deg]" },
-              { id: "step-3", num: "03", title: "Admission Prediction", desc: "Dự đoán tỉ lệ trúng tuyển vào các trường mục tiêu dựa trên điểm thi.", rotate: "-rotate-[1deg]" },
-            ].map(({ id, num, title, desc, rotate }) => (
-              <div
-                key={id}
-                id={id}
-                className={`bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 flex gap-4 items-start transition-all duration-200 hover:-translate-y-1 ${rotate}`}
-              >
-                <div className="text-5xl font-bold text-sketch-red leading-none flex-shrink-0" style={{ fontFamily: "var(--font-heading)" }}>{num}</div>
-                <div>
-                  <h3 className="text-sketch-blue mb-1">{title}</h3>
-                  <p className="text-sketch-muted">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* --- BENTO GRID (Features) --- */}
+      <section id="features" className="py-32 px-6 max-w-[1400px] mx-auto relative z-10">
+        <div className="text-center mb-24">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-6">Trải Nghiệm <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#06b6d4] to-[#8b5cf6]">Đẳng Cấp</span></h2>
+          <p className="text-[#94a3b8] text-xl max-w-2xl mx-auto font-medium">Bỏ qua những công cụ tư vấn lỗi thời. Chúng tôi mang đến hệ sinh thái công nghệ giúp bạn tự tin quyết định.</p>
         </div>
-      </section>
 
-      {/* Profile Preview */}
-      <section id="profile-preview" className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-center mb-10 rotate-[0.5deg]">Hồ sơ Năng lực Cá nhân</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div id="top-careers-preview" className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 -rotate-[1deg] pinned">
-            <h3 className="flex items-center gap-2 mb-4 text-sketch-blue">
-              <GraduationCap size={24} /> Top ngành phù hợp
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 border-[2px] border-sketch-ink rounded-full bg-sketch-yellow shadow-sketch text-sm font-semibold">
-                <Star size={14} /> Khoa học máy tính
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 border-[2px] border-sketch-ink rounded-full bg-sketch-surface shadow-sketch text-sm font-semibold">
-                <CheckCircle2 size={14} /> Phân tích dữ liệu kinh doanh
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 border-[2px] border-sketch-ink rounded-full bg-sketch-surface shadow-sketch text-sm font-semibold">
-                <CheckCircle2 size={14} /> Kỹ thuật phần mềm
-              </span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
+          {/* Card 1: Large Wide */}
+          <div className="md:col-span-2 glass-panel bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 relative overflow-hidden group hover:border-[#06b6d4]/50 transition-colors duration-500">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#06b6d4]/10 blur-3xl rounded-full transition-all group-hover:bg-[#06b6d4]/20" />
+            <Brain size={40} className="text-[#06b6d4] mb-6" />
+            <h3 className="text-3xl font-bold text-white mb-4">Hồ Sơ Năng Lực AI</h3>
+            <p className="text-lg text-[#94a3b8] max-w-md leading-relaxed">Đánh giá chuyên sâu qua bài test tương tác. Khám phá thiên hướng bẩm sinh dựa trên lý thuyết Holland RIASEC được AI cá nhân hóa.</p>
+            <div className="absolute bottom-[-20%] right-[-5%] opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+              <svg width="300" height="300" viewBox="0 0 100 100" className="text-[#06b6d4]/20 fill-current">
+                <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" />
+              </svg>
             </div>
           </div>
-          <div id="prediction-preview" className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 rotate-[1deg] pinned">
-            <h3 className="flex items-center gap-2 mb-4 text-sketch-blue">
-              <TrendingUp size={24} /> Dự đoán trúng tuyển
-            </h3>
-            <div className="space-y-2">
-              {[
-                { label: "ĐH Bách Khoa (IT1)", badge: "Thách thức", bg: "bg-red-50", text: "text-red-800" },
-                { label: "ĐH Kinh tế Quốc dân", badge: "Cân bằng", bg: "bg-blue-50", text: "text-sketch-blue" },
-                { label: "ĐH FPT (SE)", badge: "An toàn", bg: "bg-green-50", text: "text-green-800" },
-              ].map(({ label, badge, bg, text }) => (
-                <div key={label} className="flex items-center justify-between px-4 py-2 border-[2px] border-sketch-ink rounded-xl bg-sketch-surface">
-                  <span className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{label}</span>
-                  <span className={`text-sm px-3 py-0.5 rounded-full border-[2px] border-sketch-ink font-bold ${bg} ${text}`}>{badge}</span>
-                </div>
-              ))}
-            </div>
+
+          {/* Card 2: Square */}
+          <div className="glass-panel bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 relative overflow-hidden group hover:border-[#8b5cf6]/50 transition-colors duration-500 flex flex-col justify-center items-center text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#8b5cf6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Database size={40} className="text-[#8b5cf6] mb-6" />
+            <h3 className="text-2xl font-bold text-white mb-4">Dữ Liệu Khổng Lồ</h3>
+            <p className="text-[#94a3b8] leading-relaxed">Học hỏi từ 5+ năm dữ liệu tuyển sinh thực tế của hàng trăm trường ĐH.</p>
+          </div>
+
+          {/* Card 3: Square */}
+          <div className="glass-panel bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 relative overflow-hidden group hover:border-[#f43f5e]/50 transition-colors duration-500">
+             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(244,63,94,0.1),transparent_50%)]" />
+             <LineChart size={40} className="text-[#f43f5e] mb-6" />
+             <h3 className="text-2xl font-bold text-white mb-4">Dự Báo Chính Xác</h3>
+             <p className="text-[#94a3b8] leading-relaxed">Thuật toán Machine Learning dự báo điểm chuẩn với sai số chỉ ±0.2 điểm.</p>
+          </div>
+
+          {/* Card 4: Large Wide */}
+          <div className="md:col-span-2 glass-panel bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 relative overflow-hidden group hover:border-emerald-500/50 transition-colors duration-500">
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%)] bg-[length:250%_250%,100%_100%] animate-bg-pan" />
+            <Bot size={40} className="text-emerald-400 mb-6 relative z-10" />
+            <h3 className="text-3xl font-bold text-white mb-4 relative z-10">Chatbot Cố Vấn 24/7</h3>
+            <p className="text-lg text-[#94a3b8] max-w-md leading-relaxed relative z-10">Giải đáp mọi thắc mắc về ngành nghề, học phí, môi trường học tập. Một "người anh đi trước" thực sự hiểu bạn.</p>
           </div>
         </div>
       </section>
 
-      <hr className="hand-drawn-hr" />
-
-      {/* AI Tech */}
-      <section id="ai-tech" className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-center mb-10 -rotate-[0.5deg]">Công nghệ đằng sau</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { id: "tech-1", icon: <Bot size={40} strokeWidth={1.5} />, title: "LLM Engine", desc: "Xử lý ngôn ngữ tự nhiên để tư vấn như một chuyên gia thực thụ.", rotate: "rotate-[1deg]" },
-            { id: "tech-2", icon: <Radio size={40} strokeWidth={1.5} />, title: "Machine Learning", desc: "Học hỏi từ xu hướng nghề nghiệp và dữ liệu thị trường liên tục.", rotate: "-rotate-[1deg]" },
-            { id: "tech-3", icon: <Database size={40} strokeWidth={1.5} />, title: "RAG Architecture", desc: "Kết nối trực tiếp với cơ sở dữ liệu tuyển sinh chính thức.", rotate: "rotate-[1deg]" },
-          ].map(({ id, icon, title, desc, rotate }) => (
-            <div key={id} id={id} className={`bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 text-center transition-all duration-200 hover:-translate-y-1 ${rotate}`}>
-              <div className="flex justify-center mb-2 text-sketch-blue">{icon}</div>
-              <h4 className="text-sketch-blue mb-2" style={{ fontFamily: "var(--font-heading)", fontSize: 18 }}>{title}</h4>
-              <p className="text-sketch-muted text-base">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section id="benefits" className="section-alt-bg py-16 px-8">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center mb-10">Dành cho tất cả mọi người</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { id: "benefit-student", icon: <Backpack size={24} />, title: "Cho Học Sinh", rotate: "-rotate-[1deg]", items: ["Tự tin với lựa chọn của mình", "Giảm áp lực thi cử vô định", "Khám phá tiềm năng ẩn giấu"] },
-              { id: "benefit-parent", icon: <Users size={24} />, title: "Cho Phụ Huynh", rotate: "rotate-[1deg]", items: ["Đồng hành cùng con dựa trên cơ sở khoa học", "Tối ưu hóa chi phí đầu tư giáo dục", "Giảm bớt mâu thuẫn gia đình"] },
-              { id: "benefit-school", icon: <School size={24} />, title: "Cho Nhà Trường", rotate: "-rotate-[1deg]", items: ["Tăng tỉ lệ học sinh đỗ nguyện vọng 1", "Công cụ hướng nghiệp hiện đại", "Quản lý năng lực học sinh dễ dàng"] },
-            ].map(({ id, icon, title, rotate, items }) => (
-              <div key={id} id={id} className={`relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-6 tape ${rotate}`}>
-                <h3 className="flex items-center gap-2 mb-4 text-sketch-red">{icon} {title}</h3>
-                <ul className="benefit-list space-y-2.5 list-none">
-                  {items.map((item) => <li key={item} className="flex items-center text-lg">{item}</li>)}
-                </ul>
-              </div>
-            ))}
+      {/* --- CTA BANNER --- */}
+      <section className="py-32 px-6 relative z-10 overflow-hidden mt-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
+        <div className="max-w-[1200px] mx-auto relative glass-panel bg-[#06b6d4]/5 border border-[#06b6d4]/20 rounded-[3rem] p-16 md:p-24 text-center overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_70%)]" />
+          
+          <h2 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-8 relative z-10">
+            Sẵn sàng chạm tay <br />vào <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#cbd5e1] drop-shadow-lg">ước mơ?</span>
+          </h2>
+          <p className="text-xl text-[#94a3b8] mb-12 max-w-2xl mx-auto font-medium relative z-10">
+            Hàng chục ngàn học sinh đã tìm thấy bến đỗ vững chắc. Hãy là người tiếp theo làm chủ tương lai của mình.
+          </p>
+          <div className="relative z-10 flex justify-center">
+            <HomeStartButton
+              id="cta-start-btn-bottom"
+              className="px-12 py-6 text-xl bg-white text-black font-extrabold hover:bg-[#cbd5e1] rounded-full shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-all hover:scale-110"
+            />
           </div>
         </div>
-      </section>
-
-      {/* CTA Banner */}
-      <section id="cta-banner" className="text-center py-16 px-8 bg-sketch-ink">
-        <h2 className="text-sketch-yellow mb-3">Bắt đầu hành trình của bạn</h2>
-        <p className="text-sketch-surface-dim text-xl mb-8">
-          Gia nhập cùng <span className="text-sketch-yellow font-bold">50.000+</span> học sinh đã tìm thấy con đường của mình qua SketchApp AI.
-        </p>
-        <HomeStartButton
-          id="cta-start-btn"
-          className="inline-flex items-center gap-2 px-10 py-4 text-white font-bold border-[2px] border-sketch-yellow bg-sketch-red wobbly-btn shadow-sketch-red text-xl hover:no-underline transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1"
-        />
       </section>
 
       <Footer />
-    </>
+    </div>
   );
 }

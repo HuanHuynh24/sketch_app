@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import type { KeyboardEvent } from "react";
@@ -19,6 +21,7 @@ import {
   Sparkles,
   Trophy,
   User,
+  Zap,
 } from "lucide-react";
 import {
   ApiError,
@@ -32,9 +35,14 @@ import {
   clearAuthSession,
   getAccessToken,
   getMe,
+  getRiasecProfile,
   startRiasecSession,
   submitRiasecAnswer,
 } from "@/lib/api";
+import { ScoreBars } from './components/ScoreBars';
+import { RiasecRadar } from './components/RiasecRadar';
+import { ResultPanel } from './components/ResultPanel';
+import { SubmitStatus } from './components/SubmitStatus';
 
 interface Message {
   id: string;
@@ -50,12 +58,12 @@ const riasecGroups: RiasecGroup[] = ["R", "I", "A", "S", "E", "C"];
 const fallbackMaxSteps = 7;
 
 const groupColors: Record<RiasecGroup, string> = {
-  R: "#ff4d4d",
-  I: "#2d5da1",
-  A: "#7c3aed",
-  S: "#16a34a",
-  E: "#ea580c",
-  C: "#64748b",
+  R: "#f43f5e", // Rose
+  I: "#06b6d4", // Cyan
+  A: "#c084fc", // Purple
+  S: "#10b981", // Emerald
+  E: "#f59e0b", // Amber
+  C: "#94a3b8", // Slate
 };
 
 const scenarioMessageTypes = new Set<RiasecMessageType>([
@@ -67,7 +75,6 @@ function makeMessageId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
-
   return `${Date.now()}-${Math.random()}`;
 }
 
@@ -76,10 +83,8 @@ function getErrorText(err: unknown) {
     if (err.status === 401) {
       return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
     }
-
     return err.message;
   }
-
   return "Không thể kết nối tới hệ thống. Vui lòng kiểm tra backend và thử lại.";
 }
 
@@ -107,247 +112,11 @@ function getAssistantResponseMessages(data: {
   if (data.assistant_messages && data.assistant_messages.length > 0) {
     return assistantMessagesToLocal(data.assistant_messages);
   }
-
   return data.assistant_message
     ? assistantMessagesToLocal([data.assistant_message])
     : [];
 }
 
-function ScoreBars({ scores }: { scores: RiasecScore }) {
-  const maxScore = Math.max(1, ...riasecGroups.map((group) => scores[group] ?? 0));
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {riasecGroups.map((group) => {
-        const value = scores[group] ?? 0;
-        const width = `${Math.max(5, (value / maxScore) * 100)}%`;
-
-        return (
-          <div key={group} className="flex items-center gap-3">
-            <span
-              className="w-8 h-8 inline-flex items-center justify-center rounded-full border-[2px] border-sketch-ink bg-sketch-yellow font-bold"
-              style={{ fontFamily: "var(--font-heading)", color: groupColors[group] }}
-            >
-              {group}
-            </span>
-            <div className="flex-1 h-4 border-[2px] border-sketch-ink rounded-full overflow-hidden bg-sketch-surface-dim">
-              <div className="h-full" style={{ width, backgroundColor: groupColors[group] }} />
-            </div>
-            <span className="min-w-10 text-right text-sm font-bold">{value.toFixed(1)}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function polarToCart(cx: number, cy: number, r: number, angleDeg: number) {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-function RiasecRadar({ axes }: { axes: RadarAxis[] }) {
-  const cx = 180;
-  const cy = 180;
-  const maxR = 118;
-  const levels = [0.25, 0.5, 0.75, 1];
-  const normalizedAxes = riasecGroups.map((group, index) => {
-    const axis = axes.find((item) => item.group === group);
-    return {
-      group,
-      label: axis?.label ?? group,
-      value: axis?.normalized_score ?? 0,
-      rawScore: axis?.score ?? 0,
-      confidence: axis?.confidence ?? 0,
-      angle: index * 60,
-    };
-  });
-  const dataPoints = normalizedAxes.map((axis) =>
-    polarToCart(cx, cy, (axis.value / 100) * maxR, axis.angle),
-  );
-  const pathD = `${dataPoints
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ")} Z`;
-
-  return (
-    <svg viewBox="0 0 360 360" className="w-full max-w-[360px] aspect-square" role="img" aria-label="Biểu đồ radar RIASEC">
-      {levels.map((level) => {
-        const pts = normalizedAxes
-          .map((axis) => polarToCart(cx, cy, maxR * level, axis.angle))
-          .map((point) => `${point.x},${point.y}`)
-          .join(" ");
-
-        return <polygon key={level} points={pts} fill="none" stroke="#2d2d2d" strokeWidth="1.5" opacity="0.18" />;
-      })}
-
-      {normalizedAxes.map((axis) => {
-        const end = polarToCart(cx, cy, maxR, axis.angle);
-        const label = polarToCart(cx, cy, maxR + 30, axis.angle);
-
-        return (
-          <g key={axis.group}>
-            <line x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#2d2d2d" strokeWidth="1" opacity="0.14" />
-            <text
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{ fontFamily: "Kalam, cursive", fontSize: 15, fontWeight: 700, fill: groupColors[axis.group] }}
-            >
-              {axis.group}
-            </text>
-          </g>
-        );
-      })}
-
-      <path d={pathD} fill="rgba(45,93,161,0.16)" stroke="#2d5da1" strokeWidth="3" />
-      {dataPoints.map((point, index) => {
-        const axis = normalizedAxes[index];
-
-        return (
-          <g key={axis.group}>
-            <circle cx={point.x} cy={point.y} r="6" fill={groupColors[axis.group]} stroke="#2d2d2d" strokeWidth="2" />
-            <title>
-              {axis.label}: {axis.rawScore.toFixed(1)} điểm, tin cậy {Math.round(axis.confidence * 100)}%
-            </title>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-function ResultPanel({ profile }: { profile: DigitalCompetencyProfile }) {
-  const axes = profile.radar_chart?.axes ?? [];
-  const dominantGroups = profile.dominant_groups ?? [];
-  const groupAnalysis = profile.group_analysis ?? [];
-  const recommendations = profile.career_recommendations;
-
-  return (
-    <section className="self-stretch border-[2px] border-sketch-ink bg-sketch-yellow wobbly shadow-sketch-md p-5 md:p-6">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 border-[2px] border-sketch-ink bg-sketch-surface rounded-full font-bold text-sketch-blue">
-            <Trophy size={18} /> Mã RIASEC
-          </div>
-          <h3 className="mt-3 text-sketch-red" style={{ fontSize: 32 }}>
-            {profile.riasec_code}
-          </h3>
-          <p className="max-w-3xl text-sketch-ink">{profile.summary}</p>
-        </div>
-
-        <Link
-          href={`/profile?dcp_id=${profile.dcp_id}`}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 border-[2px] border-sketch-ink bg-sketch-surface wobbly-btn shadow-sketch text-sketch-blue font-bold"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          <Compass size={16} /> Xem hồ sơ đầy đủ
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-5">
-        <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3 font-bold text-sketch-blue">
-            <BarChart3 size={18} /> Radar RIASEC
-          </div>
-          <div className="flex justify-center">
-            <RiasecRadar axes={axes} />
-          </div>
-          <ScoreBars scores={profile.scores} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h4 className="text-sketch-blue mb-3 flex items-center gap-2" style={{ fontSize: 21 }}>
-              <Sparkles size={18} /> Nhóm nổi bật
-            </h4>
-            <div className="space-y-3">
-              {dominantGroups.map((group) => (
-                <div key={group.group} className="border-[2px] border-sketch-ink bg-sketch-bg p-3 rounded-lg">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold" style={{ color: groupColors[group.group] }}>
-                      {group.group} - {group.label}
-                    </span>
-                    <span className="text-sm font-bold">{group.score.toFixed(1)} điểm</span>
-                  </div>
-                  <p className="text-sm text-sketch-muted mt-1">{group.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h4 className="text-sketch-blue mb-3 flex items-center gap-2" style={{ fontSize: 21 }}>
-              <GraduationCap size={18} /> Ngành phù hợp
-            </h4>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {(recommendations?.recommended_majors ?? profile.recommended_majors).slice(0, 8).map((major) => (
-                <span key={major} className="px-3 py-1 border-[2px] border-sketch-ink bg-sketch-yellow rounded-full text-sm font-bold">
-                  {major}
-                </span>
-              ))}
-            </div>
-            <p className="text-sm text-sketch-muted">
-              Vai trò gợi ý: {(recommendations?.suitable_roles ?? []).slice(0, 6).join(", ") || "Đang cập nhật."}
-            </p>
-          </div>
-
-          <div className="lg:col-span-2 bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h4 className="text-sketch-blue mb-3 flex items-center gap-2" style={{ fontSize: 21 }}>
-              <Brain size={18} /> Phân tích chi tiết
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {groupAnalysis.slice(0, 3).map((group) => (
-                <div key={group.group} className="border-[2px] border-sketch-ink bg-sketch-bg p-3 rounded-lg">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold" style={{ color: groupColors[group.group] }}>
-                      {group.group} - {group.label}
-                    </span>
-                    <span className="text-xs uppercase font-bold text-sketch-muted">{group.level}</span>
-                  </div>
-                  <p className="text-sm text-sketch-muted mb-2">{group.description}</p>
-                  <p className="text-sm">
-                    <b>Kỹ năng:</b> {group.digital_competencies.slice(0, 3).join(", ")}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SubmitStatus({ stage }: { stage: SubmitStage }) {
-  if (stage === "idle") {
-    return null;
-  }
-
-  const isSending = stage === "sending";
-
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-ink bg-sketch-surface shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
-    >
-      <div className="flex items-center gap-2 font-bold text-sketch-blue" style={{ fontFamily: "var(--font-heading)" }}>
-        <LoaderCircle size={18} className="animate-spin" />
-        {isSending ? "Đang gửi câu trả lời..." : "Đang chờ phản hồi..."}
-      </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-2 text-sm font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        <div className={`flex items-center justify-center gap-1 border-[2px] border-sketch-ink px-3 py-2 ${isSending ? "bg-sketch-yellow text-sketch-ink" : "bg-sketch-blue text-white"}`}>
-          <SendHorizontal size={14} /> Gửi
-        </div>
-        <div className={`flex items-center justify-center gap-1 border-[2px] border-sketch-ink px-3 py-2 ${isSending ? "bg-sketch-bg text-sketch-muted" : "bg-sketch-yellow text-sketch-ink"}`}>
-          <Bot size={14} /> Phản hồi
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function ChatUI() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -377,7 +146,6 @@ export default function ChatUI() {
     if (!getAccessToken()) {
       throw new ApiError("Bạn cần đăng nhập trước khi bắt đầu hội thoại.", 401, null);
     }
-
     await getMe();
   };
 
@@ -408,7 +176,7 @@ export default function ChatUI() {
         clearAuthSession();
         setAuthError(
           err.status === 401
-            ? "Phiên đăng nhập đã hết hạn hoặc chưa tồn tại. Vui lòng đăng nhập lại."
+            ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
             : "Không tìm thấy thông tin học sinh. Vui lòng đăng nhập lại.",
         );
       } else {
@@ -424,12 +192,14 @@ export default function ChatUI() {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [messages, profile, warning, submitStage]);
+    // Add a slight delay for smooth scrolling after DOM updates
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    }, 100);
+  }, [messages, profile, warning, submitStage, isLoadingProfile]);
 
   const handleSend = async () => {
     const answerText = input.trim();
-
     if (!answerText || !session || isInputDisabled || session.status === "completed") {
       return;
     }
@@ -456,7 +226,7 @@ export default function ChatUI() {
         setSubmitStage((currentStage) =>
           currentStage === "sending" ? "waiting" : currentStage,
         );
-      }, 300);
+      }, 400);
 
       const data = await answerRequest;
       const assistantMessages = getAssistantResponseMessages(data);
@@ -478,7 +248,7 @@ export default function ChatUI() {
             const dcpProfile = await getRiasecProfile(data.dcp_id);
             setProfile(dcpProfile);
           } catch {
-            // Fetch thất bại — user vẫn có thể vào profile thủ công
+            // Fetch thất bại
           } finally {
             setIsLoadingProfile(false);
           }
@@ -501,20 +271,10 @@ export default function ChatUI() {
         },
       ]);
     } finally {
-      if (waitingTimer) {
-        clearTimeout(waitingTimer);
-      }
-
+      if (waitingTimer) clearTimeout(waitingTimer);
       setSubmitStage("idle");
     }
   };
-
-  const submitButtonLabel =
-    submitStage === "sending"
-      ? "Đang gửi..."
-      : submitStage === "waiting"
-        ? "Chờ phản hồi..."
-        : "Gửi";
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -524,193 +284,244 @@ export default function ChatUI() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Navbar />
+    <div className="flex flex-col h-screen bg-[#030014] text-white relative overflow-hidden">
+      
+      {/* Immersive Background */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.1),transparent_50%)]"></div>
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_100%,rgba(6,182,212,0.05),transparent_50%)]"></div>
+        <div className="absolute w-[800px] h-[800px] bg-[#7c3aed] opacity-5 blur-[150px] rounded-full top-[20%] left-[-20%] animate-pulse-glow" style={{ animationDuration: '8s' }}></div>
+      </div>
+      
+      <div className="relative z-50">
+        <Navbar />
+      </div>
 
-      <header
-        id="chat-header"
-        className="px-5 md:px-8 py-4 border-b-[3px] border-sketch-ink bg-sketch-bg"
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <MessageSquare size={24} className="text-sketch-red" />
+      {/* Cyberpunk HUD Header */}
+      <header className="px-5 md:px-8 py-4 border-b border-white/5 bg-black/40 backdrop-blur-xl relative z-40 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#06b6d4] to-[#7c3aed] p-[1px] shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+               <div className="w-full h-full bg-[#030014] rounded-[15px] flex items-center justify-center relative overflow-hidden">
+                 <div className="absolute inset-0 bg-[#06b6d4] opacity-20 animate-pulse"></div>
+                 <Brain size={24} className="text-[#06b6d4] relative z-10" />
+               </div>
+            </div>
             <div>
-              <h2 className="text-sketch-red m-0" style={{ fontFamily: "var(--font-heading)", fontSize: 24 }}>
-                Hội thoại RIASEC
+              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#94a3b8] tracking-tight uppercase">
+                Hệ thống Khảo sát
               </h2>
-              <p className="text-sm text-sketch-muted">Trả lời theo cách bạn thật sự sẽ xử lý tình huống.</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+                <span className="text-xs text-[#06b6d4] font-mono tracking-widest">AI NEURAL NETWORK ACTIVE</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="min-w-[220px]">
-              <div className="flex justify-between text-sm font-bold text-sketch-muted mb-1">
-                <span>{isLoadingSession ? "Đang khởi tạo..." : session ? `Câu ${displayStep}/${maxSteps}` : "Chưa có phiên"}</span>
-                <span>{progressPercent}%</span>
-              </div>
-              <div className="h-3 border-[2px] border-sketch-ink bg-sketch-surface rounded-full overflow-hidden">
-                <div className="h-full bg-sketch-red transition-all" style={{ width: `${progressPercent}%` }} />
+          <div className="flex flex-col gap-2 min-w-[250px]">
+            <div className="flex justify-between text-xs font-bold text-[#94a3b8] uppercase tracking-[0.2em]">
+              <span>TIẾN ĐỘ THU THẬP ({isLoadingSession ? "..." : session ? `${displayStep}/${maxSteps}` : "0"})</span>
+              <span className="text-[#06b6d4] font-mono">{progressPercent}%</span>
+            </div>
+            <div className="h-1.5 bg-black rounded-full overflow-hidden border border-white/10 shadow-inner">
+              <div 
+                className="h-full bg-gradient-to-r from-[#7c3aed] via-[#06b6d4] to-white shadow-[0_0_15px_#06b6d4] transition-all duration-1000 ease-out relative" 
+                style={{ width: `${progressPercent}%` }} 
+              >
+                <div className="absolute top-0 right-0 w-8 h-full bg-white opacity-50 blur-[2px]"></div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => void startConversation()}
-              disabled={isLoadingSession}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold border-[2px] border-sketch-ink bg-sketch-surface wobbly-btn shadow-sketch cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              <RefreshCw size={15} /> Làm lại
-            </button>
           </div>
         </div>
       </header>
 
-      <main id="chat-messages" className="flex-1 overflow-y-auto px-5 md:px-8 py-6 flex flex-col gap-5">
-        {isLoadingSession && (
-          <div className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-ink bg-sketch-surface shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl">
-            <div className="flex items-center gap-2 font-bold text-sketch-blue" style={{ fontFamily: "var(--font-heading)" }}>
-              <LoaderCircle size={18} className="animate-spin" /> Đang tạo phiên hội thoại...
-            </div>
-          </div>
-        )}
-
-        {authError && (
-          <div className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-error bg-red-50 shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl">
-            <div className="flex items-center gap-2 font-bold text-sketch-error mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-              <AlertTriangle size={18} /> Cần đăng nhập
-            </div>
-            <p className="mb-3">{authError}</p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex items-center px-4 py-2 border-[2px] border-sketch-ink bg-sketch-red text-white wobbly-btn shadow-sketch">
-                Đăng nhập
-              </Link>
-              <Link href="/signup" className="inline-flex items-center px-4 py-2 border-[2px] border-sketch-ink bg-sketch-yellow text-sketch-ink wobbly-btn shadow-sketch">
-                Tạo tài khoản
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {error && !authError && (
-          <div className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-error bg-red-50 shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl">
-            <div className="flex items-center gap-2 font-bold text-sketch-error" style={{ fontFamily: "var(--font-heading)" }}>
-              <AlertTriangle size={18} /> {error}
-            </div>
-          </div>
-        )}
-
-        {messages.map((msg) => {
-          const isUser = msg.role === "user";
-          const isSystem = msg.tone === "system";
-          const isScenario = Boolean(msg.type && scenarioMessageTypes.has(msg.type as RiasecMessageType));
-          const label = isUser ? "Bạn" : "SketchAI";
-
-          return (
-            <article
-              key={msg.id}
-              id={`chat-msg-${msg.id}`}
-              className={`max-w-[94%] md:max-w-[74%] px-5 py-4 border-[2px] border-sketch-ink text-lg leading-relaxed ${
-                isUser
-                  ? "self-end bg-sketch-blue text-white shadow-sketch-blue rotate-[0.5deg] rounded-tl-2xl rounded-tr-sm rounded-br-2xl rounded-bl-2xl"
-                  : msg.tone === "warning"
-                    ? "self-start bg-red-50 shadow-sketch -rotate-[0.5deg] rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
-                    : msg.tone === "result"
-                      ? "self-start bg-sketch-yellow shadow-sketch-md -rotate-[0.5deg] rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
-                      : isSystem
-                        ? "self-start bg-sketch-bg-alt shadow-sketch -rotate-[0.25deg] rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
-                        : "self-start bg-sketch-surface shadow-sketch -rotate-[0.5deg] rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div
-                  className={`flex items-center gap-1 text-sm font-bold opacity-75 ${isUser ? "text-white" : "text-sketch-ink"}`}
-                  style={{ fontFamily: "var(--font-heading)" }}
-                >
-                  {isUser ? <User size={14} /> : isSystem ? <CheckCircle2 size={14} /> : <Bot size={14} />}
-                  {label}
-                </div>
-
-                {isScenario && (
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 border-[2px] border-sketch-ink bg-sketch-yellow rounded-full text-xs font-bold text-sketch-ink"
-                    style={{ fontFamily: "var(--font-heading)" }}
-                  >
-                    <MessageSquare size={12} /> Câu hỏi tình huống
-                  </span>
-                )}
+      <main id="chat-messages" className="flex-1 overflow-y-auto px-5 md:px-8 py-10 flex flex-col gap-8 relative z-10 scroll-smooth custom-scrollbar">
+        <style>{`
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        `}</style>
+        
+        <div className="max-w-4xl w-full mx-auto flex flex-col gap-8">
+          
+          {isLoadingSession && (
+            <div className="self-center flex flex-col items-center gap-4 mt-20 opacity-0 animate-[slideUp_0.5s_ease-out_forwards]">
+              <div className="w-20 h-20 rounded-full bg-transparent border-[3px] border-[#06b6d4]/30 border-t-[#06b6d4] animate-spin flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                <div className="w-12 h-12 rounded-full border-[3px] border-[#7c3aed]/30 border-b-[#7c3aed] animate-[spin_1.5s_linear_infinite_reverse]"></div>
               </div>
-              <p style={{ whiteSpace: "pre-line" }}>{msg.text}</p>
-            </article>
-          );
-        })}
-
-        <SubmitStatus stage={submitStage} />
-
-        {warning && (
-          <p role="status" className="self-start text-sm font-bold text-sketch-error">
-            {warning}
-          </p>
-        )}
-
-        {isLoadingProfile && (
-          <div className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-ink bg-sketch-yellow shadow-sketch-md rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl">
-            <div className="flex items-center gap-2 font-bold text-sketch-ink" style={{ fontFamily: "var(--font-heading)" }}>
-              <LoaderCircle size={18} className="animate-spin" />
-              Đang tổng hợp kết quả RIASEC của bạn...
+              <div className="text-lg font-mono text-[#06b6d4] tracking-widest uppercase mt-4">
+                Đang thiết lập chuỗi hội thoại...
+              </div>
             </div>
-            <p className="text-sm text-sketch-muted mt-1">Vui lòng chờ trong giây lát, AI đang phân tích hồ sơ.</p>
-          </div>
-        )}
+          )}
 
-        {!isLoadingProfile && profile && <ResultPanel profile={profile} />}
-
-        {!isLoadingProfile && !profile && dcpId && (
-          <div className="self-start max-w-[90%] md:max-w-[70%] px-5 py-4 border-[2px] border-sketch-error bg-red-50 shadow-sketch rounded-tl-sm rounded-tr-2xl rounded-br-2xl rounded-bl-2xl">
-            <div className="flex items-center gap-2 font-bold text-sketch-error mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-              <AlertTriangle size={18} /> Không thể tải kết quả tự động
+          {authError && (
+            <div className="self-center w-full max-w-lg mt-10 glass-panel border border-[#f43f5e]/50 bg-[#f43f5e]/10 p-10 text-center rounded-[2rem] shadow-[0_20px_50px_rgba(244,63,94,0.2)]">
+              <div className="w-20 h-20 rounded-2xl bg-[#f43f5e]/20 flex items-center justify-center mx-auto mb-6 text-[#f43f5e] border border-[#f43f5e]/30 shadow-inner">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-3 tracking-tight">Hết phiên đăng nhập</h3>
+              <p className="text-[#94a3b8] mb-8 text-lg">{authError}</p>
+              <div className="flex justify-center gap-4">
+                <Link href="/login" className="btn-premium px-8 py-3 text-lg w-full">Đăng nhập ngay</Link>
+              </div>
             </div>
-            <p className="text-sm mb-3">Bài đánh giá đã hoàn tất. Nhấn bên dưới để xem kết quả đầy đủ.</p>
-            <Link
-              href={`/profile?dcp_id=${dcpId}`}
-              className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-sketch-ink bg-sketch-blue text-white wobbly-btn shadow-sketch font-bold"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              <Compass size={16} /> Xem kết quả RIASEC
-            </Link>
-          </div>
-        )}
+          )}
 
-        <div ref={bottomRef} />
+          {error && !authError && (
+            <div className="self-center glass-panel border border-[#f43f5e]/50 bg-[#f43f5e]/10 px-6 py-4 rounded-2xl flex items-center gap-4 text-base text-[#f43f5e] shadow-[0_10px_30px_rgba(244,63,94,0.2)]">
+              <AlertTriangle size={20} className="shrink-0" /> <span className="font-medium">{error}</span>
+            </div>
+          )}
+
+          {messages.map((msg, idx) => {
+            const isUser = msg.role === "user";
+            const isSystem = msg.tone === "system";
+            const isScenario = Boolean(msg.type && scenarioMessageTypes.has(msg.type as RiasecMessageType));
+            const isResult = msg.tone === "result";
+
+            // Animation for new messages
+            const isLatest = idx === messages.length - 1;
+            const animationClass = isLatest ? "animate-[slideUp_0.5s_ease-out_forwards]" : "";
+
+            return (
+              <div key={msg.id} className={`flex w-full ${isUser ? "justify-end" : "justify-start"} ${animationClass}`}>
+                <div className={`flex gap-4 max-w-[90%] md:max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+                  
+                  {/* Avatar */}
+                  <div className="shrink-0 pt-2">
+                    {isUser ? (
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#c084fc] to-[#7c3aed] flex items-center justify-center shadow-[0_0_15px_rgba(124,58,237,0.4)] border border-white/20">
+                        <User size={18} className="text-white" />
+                      </div>
+                    ) : (
+                      <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center relative overflow-hidden ${isSystem ? 'bg-black/50 border-white/10' : 'bg-[#030014] border-[#06b6d4]/50 shadow-[0_0_20px_rgba(6,182,212,0.4)]'}`}>
+                        {!isSystem && <div className="absolute inset-0 bg-[#06b6d4] opacity-20"></div>}
+                        {isSystem ? <CheckCircle2 size={18} className="text-[#94a3b8]"/> : <Bot size={20} className="text-[#06b6d4] relative z-10" />}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bubble */}
+                  <div className={`
+                    p-6 rounded-[1.5rem] relative
+                    ${isUser 
+                      ? "bg-gradient-to-br from-[#7c3aed]/90 to-[#4f46e5]/90 border border-white/10 text-white rounded-tr-sm shadow-[0_15px_30px_rgba(124,58,237,0.3)]" 
+                      : msg.tone === "warning"
+                        ? "bg-[#f43f5e]/10 border border-[#f43f5e]/30 text-white rounded-tl-sm shadow-[0_15px_30px_rgba(244,63,94,0.15)]"
+                        : isResult
+                          ? "bg-gradient-to-br from-[#f59e0b]/20 to-[#fb923c]/10 border border-[#f59e0b]/30 text-white rounded-tl-sm shadow-[0_15px_30px_rgba(245,158,11,0.15)]"
+                          : isSystem
+                            ? "bg-transparent border border-white/5 text-[#94a3b8] text-sm rounded-tl-sm"
+                            : "glass-panel border-white/10 text-white rounded-tl-sm shadow-[0_20px_40px_rgba(0,0,0,0.4)] bg-black/40 backdrop-blur-2xl"
+                    }
+                  `}>
+                    {/* Glowing left edge for AI messages */}
+                    {!isUser && !isSystem && (
+                      <div className="absolute left-0 top-6 bottom-6 w-1 bg-gradient-to-b from-[#06b6d4] to-[#7c3aed] rounded-r-full shadow-[0_0_10px_#06b6d4]"></div>
+                    )}
+
+                    {isScenario && (
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#06b6d4]/10 border border-[#06b6d4]/30 rounded-full text-[11px] font-bold text-[#06b6d4] uppercase tracking-[0.15em] shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                          <Zap size={12} className="text-[#06b6d4]" /> Phân tích tình huống
+                        </span>
+                      </div>
+                    )}
+                    <p className={`whitespace-pre-line leading-loose ${isSystem ? 'text-sm' : 'text-lg md:text-xl font-medium tracking-tight'}`}>
+                      {msg.text}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            );
+          })}
+
+          <SubmitStatus stage={submitStage} />
+
+          {warning && (
+            <div className="flex justify-start animate-[slideUp_0.3s_ease-out_forwards]">
+              <div className="ml-14 bg-[#f43f5e]/10 border border-[#f43f5e]/30 px-5 py-3 rounded-2xl rounded-tl-sm flex items-center gap-3 shadow-[0_10px_20px_rgba(244,63,94,0.15)]">
+                <AlertTriangle size={16} className="text-[#f43f5e]" />
+                <p className="text-sm font-medium text-[#f43f5e]">{warning}</p>
+              </div>
+            </div>
+          )}
+
+          {isLoadingProfile && (
+            <div className="w-full glass-panel border border-[#06b6d4]/30 bg-gradient-to-br from-[#06b6d4]/5 to-[#7c3aed]/10 p-12 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden animate-[slideUp_0.5s_ease-out_forwards]">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+              <div className="relative z-10">
+                <div className="w-24 h-24 mx-auto mb-8 relative flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-[3px] border-[#06b6d4]/30 border-t-[#06b6d4] animate-spin shadow-[0_0_20px_rgba(6,182,212,0.4)]"></div>
+                  <Brain size={32} className="text-[#06b6d4] animate-pulse" />
+                </div>
+                <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#06b6d4] mb-3 tracking-tight uppercase">Đang giải mã dữ liệu</h3>
+                <p className="text-[#94a3b8] text-lg max-w-md mx-auto">AI đang tổng hợp mô hình RIASEC và quét cơ sở dữ liệu nghề nghiệp khổng lồ...</p>
+              </div>
+            </div>
+          )}
+
+          {!isLoadingProfile && profile && <ResultPanel profile={profile} />}
+
+          {!isLoadingProfile && !profile && dcpId && (
+             <div className="w-full glass-panel border border-[#f43f5e]/30 bg-[#f43f5e]/10 p-10 rounded-[2.5rem] text-center shadow-[0_20px_50px_rgba(244,63,94,0.15)]">
+              <div className="w-20 h-20 bg-[#f43f5e]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle size={32} className="text-[#f43f5e]" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">Hiển thị báo cáo gián đoạn</h3>
+              <p className="text-[#94a3b8] mb-8 text-lg">Bài đánh giá đã hoàn tất và lưu trữ thành công, nhưng gặp lỗi khi hiển thị trực tiếp.</p>
+              <Link href={`/profile?dcp_id=${dcpId}`} className="btn-premium px-8 py-3 text-lg inline-flex items-center gap-3">
+                 <Compass size={20}/> Tới không gian hồ sơ
+              </Link>
+            </div>
+          )}
+
+          <div ref={bottomRef} className="h-20" />
+        </div>
       </main>
 
+      {/* Floating Input Dock */}
       <footer
         id="chat-input-bar"
-        className="flex flex-col md:flex-row gap-4 px-5 md:px-8 py-4 border-t-[3px] border-sketch-ink bg-sketch-bg"
+        className="absolute bottom-0 left-0 w-full px-5 py-8 md:px-8 bg-gradient-to-t from-[#030014] via-[#030014]/90 to-transparent z-50 pointer-events-none"
       >
-        <input
-          id="chat-input"
-          type="text"
-          placeholder={isCompleted ? "Bài đánh giá đã hoàn tất." : "Nhập câu trả lời của bạn..."}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isInputDisabled}
-          className="flex-1 px-5 py-3 border-[2px] border-sketch-ink wobbly-alt bg-sketch-surface text-lg outline-none focus:border-sketch-blue focus:shadow-sketch-blue transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ fontFamily: "var(--font-body)" }}
-        />
-        <button
-          type="button"
-          onClick={() => void handleSend()}
-          disabled={isInputDisabled || !input.trim()}
-          id="chat-send-btn"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white font-bold border-[2px] border-sketch-ink bg-sketch-red wobbly-btn shadow-sketch text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {isSubmitting ? <LoaderCircle size={18} className="animate-spin" /> : <SendHorizontal size={18} />}
-          {submitButtonLabel}
-        </button>
+        <div className="max-w-4xl mx-auto relative pointer-events-auto">
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#7c3aed] via-[#06b6d4] to-[#c084fc] rounded-[2.5rem] opacity-30 blur-lg transition-opacity duration-500"></div>
+          
+          <div className="relative flex items-center gap-3 glass-panel border border-white/20 p-2 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-2xl focus-within:bg-black/80 focus-within:border-white/40 transition-all duration-300">
+            <div className="w-12 h-12 flex items-center justify-center shrink-0">
+               <MessageSquare size={20} className="text-[#94a3b8]" />
+            </div>
+            <input
+              id="chat-input"
+              type="text"
+              placeholder={isCompleted ? "Phiên đánh giá đã khóa." : "Nhập phản hồi của bạn..."}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isInputDisabled}
+              className="flex-1 py-4 bg-transparent text-white text-lg font-medium outline-none placeholder-[#94a3b8]/50 disabled:opacity-50 tracking-wide"
+            />
+            <button
+              type="button"
+              onClick={() => void handleSend()}
+              disabled={isInputDisabled || !input.trim()}
+              id="chat-send-btn"
+              className="shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#06b6d4] flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+            >
+              {isSubmitting ? (
+                <LoaderCircle size={24} className="animate-spin" />
+              ) : (
+                <SendHorizontal size={24} className="ml-1 group-hover:translate-x-1 transition-transform" />
+              )}
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
   );
 }
+

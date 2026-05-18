@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Flag, Lock, Mail, MapPin, Palette, Pencil } from "lucide-react";
+import { CalendarDays, Flag, Lock, Mail, MapPin, Palette, User, Target, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { ApiError, registerStudent } from "@/lib/api";
 
 export default function SignUpForm() {
@@ -25,7 +25,7 @@ export default function SignUpForm() {
     setError("");
 
     if (password !== confirm) {
-      setError("Mật khẩu xác nhận chưa khớp.");
+      setError("Mật khẩu xác nhận chưa khớp. Vui lòng kiểm tra lại.");
       return;
     }
 
@@ -55,50 +55,71 @@ export default function SignUpForm() {
     }
   };
 
-  const fields = [
-    { id: "signup-name", label: "Họ tên", icon: <Pencil size={18} />, type: "text", placeholder: "Nguyen Van Test", value: name, setter: setName, required: true },
-    { id: "signup-email", label: "Email", icon: <Mail size={18} />, type: "email", placeholder: "your-sketch@email.com", value: email, setter: setEmail, required: true },
-    { id: "signup-password", label: "Mật khẩu", icon: <Lock size={18} />, type: "password", placeholder: "Tạo mật khẩu...", value: password, setter: setPassword, required: true },
-    { id: "signup-confirm", label: "Xác nhận mật khẩu", icon: <Lock size={18} />, type: "password", placeholder: "Nhập lại mật khẩu...", value: confirm, setter: setConfirm, required: true },
-    { id: "signup-province", label: "Tỉnh/thành hiện tại", icon: <MapPin size={18} />, type: "text", placeholder: "Khánh Hòa", value: province, setter: setProvince, required: true },
-    { id: "signup-area-code", label: "Khu vực ưu tiên", icon: <Flag size={18} />, type: "text", placeholder: "KV2", value: areaCode, setter: setAreaCode, required: true },
-    { id: "signup-dob", label: "Ngày sinh", icon: <CalendarDays size={18} />, type: "date", placeholder: "", value: dob, setter: setDob, required: false },
-    { id: "signup-priority-group", label: "Nhóm ưu tiên", icon: <Flag size={18} />, type: "text", placeholder: "01", value: priorityGroup, setter: setPriorityGroup, required: false },
-    { id: "signup-target-province", label: "Tỉnh/thành muốn học", icon: <MapPin size={18} />, type: "text", placeholder: "TP.HCM", value: targetProvince, setter: setTargetProvince, required: false },
+  const basicFields = [
+    { id: "signup-name", label: "Họ và Tên", icon: <User size={16} className="text-[#06b6d4]" />, type: "text", placeholder: "Nguyễn Văn An", value: name, setter: setName, required: true },
+    { id: "signup-email", label: "Email truy cập", icon: <Mail size={16} className="text-[#8b5cf6]" />, type: "email", placeholder: "your.name@example.com", value: email, setter: setEmail, required: true },
+    { id: "signup-password", label: "Mật khẩu bảo mật", icon: <Lock size={16} className="text-[#f59e0b]" />, type: "password", placeholder: "••••••••", value: password, setter: setPassword, required: true },
+    { id: "signup-confirm", label: "Xác nhận mật khẩu", icon: <CheckCircle2 size={16} className="text-[#10b981]" />, type: "password", placeholder: "••••••••", value: confirm, setter: setConfirm, required: true },
   ];
 
+  const detailFields = [
+    { id: "signup-province", label: "Tỉnh/thành hiện tại", icon: <MapPin size={16} className="text-[#f43f5e]" />, type: "text", placeholder: "VD: Khánh Hòa", value: province, setter: setProvince, required: true },
+    { id: "signup-area-code", label: "Khu vực ưu tiên", icon: <Flag size={16} className="text-[#c084fc]" />, type: "text", placeholder: "VD: KV2", value: areaCode, setter: setAreaCode, required: true },
+    { id: "signup-dob", label: "Ngày sinh (Không bắt buộc)", icon: <CalendarDays size={16} className="text-white/50" />, type: "date", placeholder: "", value: dob, setter: setDob, required: false },
+    { id: "signup-priority-group", label: "Nhóm ưu tiên (Nếu có)", icon: <Flag size={16} className="text-white/50" />, type: "text", placeholder: "VD: 01", value: priorityGroup, setter: setPriorityGroup, required: false },
+    { id: "signup-target-province", label: "Tỉnh/thành mục tiêu", icon: <Target size={16} className="text-white/50" />, type: "text", placeholder: "VD: TP.HCM", value: targetProvince, setter: setTargetProvince, required: false },
+  ];
+
+  const renderField = ({ id, label, icon, type, placeholder, value, setter, required }: any) => (
+    <div key={id} className="flex flex-col gap-2">
+      <label
+        htmlFor={id}
+        className="flex items-center gap-2 font-bold text-[#94a3b8] text-[13px] uppercase tracking-wider"
+      >
+        {icon} {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => setter(e.target.value)}
+        required={required}
+        disabled={isSubmitting}
+        className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#06b6d4]/50 focus:bg-white/5 transition-all duration-300 placeholder:text-white/20 shadow-inner"
+      />
+    </div>
+  );
+
   return (
-    <form className="flex flex-col gap-5" onSubmit={handleSubmit} id="signup-form">
-      {fields.map(({ id, label, icon, type, placeholder, value, setter, required }) => (
-        <div key={id} className="flex flex-col gap-1.5">
-          <label
-            htmlFor={id}
-            className="flex items-center gap-1.5 font-bold text-sketch-ink"
-            style={{ fontFamily: "var(--font-heading)", fontSize: 17 }}
-          >
-            {icon} {label}
-          </label>
-          <input
-            id={id}
-            type={type}
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => setter(e.target.value)}
-            required={required}
-            disabled={isSubmitting}
-            className="bg-transparent border-0 border-b-[3px] border-sketch-ink px-0 py-2.5 text-lg outline-none focus:border-sketch-blue transition-colors duration-150 placeholder:text-sketch-muted placeholder:italic"
-            style={{ fontFamily: "var(--font-body)" }}
-          />
+    <form className="flex flex-col gap-8" onSubmit={handleSubmit} id="signup-form">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
+           <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#06b6d4]/20 border border-[#06b6d4]/30 flex items-center justify-center text-[#06b6d4] font-bold">1</div>
+              <h3 className="text-white font-bold text-lg">Thông tin định danh</h3>
+           </div>
+           {basicFields.map(renderField)}
         </div>
-      ))}
+        
+        <div className="flex flex-col gap-6">
+           <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#c084fc]/20 border border-[#c084fc]/30 flex items-center justify-center text-[#c084fc] font-bold">2</div>
+              <h3 className="text-white font-bold text-lg">Hồ sơ tuyển sinh</h3>
+           </div>
+           {detailFields.map(renderField)}
+        </div>
+      </div>
 
       {error && (
-        <p
+        <div
           role="alert"
-          className="border-[2px] border-sketch-error bg-red-50 px-4 py-2 text-sketch-error"
+          className="flex items-center gap-3 bg-[#f43f5e]/10 border border-[#f43f5e]/30 px-4 py-3 rounded-xl text-[#f43f5e] text-sm font-medium animate-pulse-slow mx-auto w-full max-w-2xl"
         >
-          {error}
-        </p>
+          <AlertTriangle size={18} />
+          <p>{error}</p>
+        </div>
       )}
 
       <button
@@ -106,10 +127,13 @@ export default function SignUpForm() {
         id="signup-submit-btn"
         disabled={isSubmitting}
         aria-busy={isSubmitting}
-        className="w-full inline-flex items-center justify-center gap-2 py-3 mt-2 text-white font-bold border-[2px] border-sketch-ink bg-sketch-blue wobbly-btn shadow-sketch-blue text-lg cursor-pointer transition-all active:shadow-pressed active:translate-x-1 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
-        style={{ fontFamily: "var(--font-heading)" }}
+        className="w-full md:w-auto md:min-w-[300px] mx-auto mt-4 btn-premium py-4"
       >
-        <Palette size={18} /> {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2"><LoaderCircle className="animate-spin" size={18} /> Đang khởi tạo hồ sơ...</span>
+        ) : (
+          <span className="flex items-center justify-center gap-2 text-lg"><Palette size={20} /> Thiết lập Hồ Sơ & Tham gia</span>
+        )}
       </button>
     </form>
   );

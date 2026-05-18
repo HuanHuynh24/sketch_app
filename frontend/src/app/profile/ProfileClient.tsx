@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,6 +23,7 @@ import {
   Sparkles,
   Target,
   UserRound,
+  Zap,
 } from "lucide-react";
 import {
   ApiError,
@@ -35,287 +38,36 @@ import {
   getRiasecProfile,
   getStoredStudent,
 } from "@/lib/api";
+import { InfoPill } from './components/InfoPill';
+import { ScoreBars } from './components/ScoreBars';
+import { RiasecRadar } from './components/RiasecRadar';
+import { RiasecResultSummary } from './components/RiasecResultSummary';
 
-const previewRadar = [
-  { label: "RIASEC", value: 0.18, angle: 0 },
-  { label: "Học lực", value: 0.34, angle: 60 },
-  { label: "Ngành", value: 0.22, angle: 120 },
-  { label: "Tuyển sinh", value: 0.16, angle: 180 },
-  { label: "Kế hoạch", value: 0.28, angle: 240 },
-  { label: "Hồ sơ", value: 0.42, angle: 300 },
-];
+const riasecGroups: RiasecGroup[] = ["R", "I", "A", "S", "E", "C"];
+
+const groupColors: Record<RiasecGroup, string> = {
+  R: "#f43f5e",
+  I: "#06b6d4",
+  A: "#c084fc",
+  S: "#10b981",
+  E: "#f59e0b",
+  C: "#94a3b8",
+};
+
+function formatDate(value?: string | null) {
+  if (!value) return "Chưa cập nhật";
+  return new Intl.DateTimeFormat("vi-VN").format(new Date(value));
+}
 
 function polarToCart(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function ProfileMapPreview() {
-  const cx = 180;
-  const cy = 180;
-  const maxR = 120;
-  const levels = [0.25, 0.5, 0.75, 1];
-  const points = previewRadar.map((item) => polarToCart(cx, cy, item.value * maxR, item.angle));
-  const pathD = `${points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ")} Z`;
-
-  return (
-    <svg viewBox="0 0 360 360" className="w-full max-w-[360px] aspect-square" role="img" aria-label="Bản đồ hồ sơ định hướng">
-      {levels.map((level) => {
-        const pts = previewRadar
-          .map((item) => polarToCart(cx, cy, maxR * level, item.angle))
-          .map((point) => `${point.x},${point.y}`)
-          .join(" ");
-
-        return <polygon key={level} points={pts} fill="none" stroke="#2d2d2d" strokeWidth="1.5" opacity="0.18" />;
-      })}
-
-      {previewRadar.map((item, index) => {
-        const end = polarToCart(cx, cy, maxR, item.angle);
-        const label = polarToCart(cx, cy, maxR + 32, item.angle);
-        const point = points[index];
-
-        return (
-          <g key={item.label}>
-            <line x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#2d2d2d" strokeWidth="1" opacity="0.12" />
-            <circle cx={point.x} cy={point.y} r="5" fill="#ff4d4d" stroke="#2d2d2d" strokeWidth="2" />
-            <text
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{ fontFamily: "Kalam, cursive", fontSize: 14, fontWeight: 700, fill: "#2d5da1" }}
-            >
-              {item.label}
-            </text>
-          </g>
-        );
-      })}
-
-      <path d={pathD} fill="rgba(255,77,77,0.14)" stroke="#ff4d4d" strokeWidth="3" />
-    </svg>
-  );
-}
-
-function formatDate(value?: string | null) {
-  if (!value) {
-    return "Chưa cập nhật";
-  }
-
-  return new Intl.DateTimeFormat("vi-VN").format(new Date(value));
-}
-
-function InfoPill({ icon: Icon, label, value }: { icon: typeof UserRound; label: string; value: string }) {
-  return (
-    <div className="border-[2px] border-sketch-ink bg-sketch-surface rounded-lg p-4">
-      <div className="flex items-center gap-2 text-sketch-blue font-bold mb-1">
-        <Icon size={18} /> {label}
-      </div>
-      <p className="text-sketch-ink">{value}</p>
-    </div>
-  );
-}
-
-const riasecGroups: RiasecGroup[] = ["R", "I", "A", "S", "E", "C"];
-
-const groupColors: Record<RiasecGroup, string> = {
-  R: "#ff4d4d",
-  I: "#2d5da1",
-  A: "#7c3aed",
-  S: "#16a34a",
-  E: "#ea580c",
-  C: "#64748b",
-};
-
-function ScoreBars({ scores }: { scores: RiasecScore }) {
-  const maxScore = Math.max(1, ...riasecGroups.map((group) => scores[group] ?? 0));
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {riasecGroups.map((group) => {
-        const value = scores[group] ?? 0;
-        const width = `${Math.max(5, (value / maxScore) * 100)}%`;
-
-        return (
-          <div key={group} className="flex items-center gap-3">
-            <span
-              className="w-8 h-8 inline-flex items-center justify-center rounded-full border-[2px] border-sketch-ink bg-sketch-yellow font-bold"
-              style={{ fontFamily: "var(--font-heading)", color: groupColors[group] }}
-            >
-              {group}
-            </span>
-            <div className="flex-1 h-4 border-[2px] border-sketch-ink rounded-full overflow-hidden bg-sketch-surface-dim">
-              <div className="h-full" style={{ width, backgroundColor: groupColors[group] }} />
-            </div>
-            <span className="min-w-10 text-right text-sm font-bold">{value.toFixed(1)}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function RiasecRadar({ axes }: { axes: RadarAxis[] }) {
-  const cx = 180;
-  const cy = 180;
-  const maxR = 118;
-  const levels = [0.25, 0.5, 0.75, 1];
-  const normalizedAxes = riasecGroups.map((group, index) => {
-    const axis = axes.find((item) => item.group === group);
-    return {
-      group,
-      value: axis?.normalized_score ?? 0,
-      angle: index * 60,
-    };
-  });
-  const dataPoints = normalizedAxes.map((axis) =>
-    polarToCart(cx, cy, (axis.value / 100) * maxR, axis.angle),
-  );
-  const pathD = `${dataPoints
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ")} Z`;
-
-  return (
-    <svg viewBox="0 0 360 360" className="w-full max-w-[320px] aspect-square" role="img" aria-label="Biểu đồ radar RIASEC">
-      {levels.map((level) => {
-        const pts = normalizedAxes
-          .map((axis) => polarToCart(cx, cy, maxR * level, axis.angle))
-          .map((point) => `${point.x},${point.y}`)
-          .join(" ");
-
-        return <polygon key={level} points={pts} fill="none" stroke="#2d2d2d" strokeWidth="1.5" opacity="0.18" />;
-      })}
-
-      {normalizedAxes.map((axis) => {
-        const end = polarToCart(cx, cy, maxR, axis.angle);
-        const label = polarToCart(cx, cy, maxR + 30, axis.angle);
-
-        return (
-          <g key={axis.group}>
-            <line x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#2d2d2d" strokeWidth="1" opacity="0.14" />
-            <text
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{ fontFamily: "Kalam, cursive", fontSize: 15, fontWeight: 700, fill: groupColors[axis.group] }}
-            >
-              {axis.group}
-            </text>
-          </g>
-        );
-      })}
-
-      <path d={pathD} fill="rgba(45,93,161,0.16)" stroke="#2d5da1" strokeWidth="3" />
-      {dataPoints.map((point, index) => {
-        const axis = normalizedAxes[index];
-
-        return <circle key={axis.group} cx={point.x} cy={point.y} r="6" fill={groupColors[axis.group]} stroke="#2d2d2d" strokeWidth="2" />;
-      })}
-    </svg>
-  );
-}
-
-function RiasecResultSummary({ profile }: { profile: DigitalCompetencyProfile }) {
-  const axes = profile.radar_chart?.axes ?? [];
-  const dominantGroups = profile.dominant_groups ?? [];
-  const groupAnalysis = profile.group_analysis ?? [];
-  const recommendations = profile.career_recommendations;
-
-  return (
-    <section className="mb-10 border-[2px] border-sketch-ink bg-sketch-yellow wobbly shadow-sketch-md p-5 md:p-6">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 border-[2px] border-sketch-ink bg-sketch-surface rounded-full font-bold text-sketch-blue">
-            <Sparkles size={18} /> Kết quả RIASEC mới nhất
-          </div>
-          <h2 className="mt-3 text-sketch-red" style={{ fontSize: 34 }}>
-            {profile.riasec_code}
-          </h2>
-          <p className="max-w-4xl text-sketch-ink">{profile.summary}</p>
-        </div>
-        <Link href="/chat" className="inline-flex items-center justify-center gap-2 px-4 py-2 border-[2px] border-sketch-ink bg-sketch-surface wobbly-btn shadow-sketch text-sketch-blue">
-          <RefreshCw size={16} /> Làm lại RIASEC
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-5">
-        <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3 font-bold text-sketch-blue">
-            <BarChart3 size={18} /> Radar chart
-          </div>
-          <div className="flex justify-center">
-            <RiasecRadar axes={axes} />
-          </div>
-          <ScoreBars scores={profile.scores} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3" style={{ fontSize: 22 }}>
-              <Target size={18} /> Nhóm nổi bật
-            </h3>
-            <div className="space-y-3">
-              {dominantGroups.slice(0, 3).map((group) => (
-                <div key={group.group} className="border-[2px] border-sketch-ink bg-sketch-bg p-3 rounded-lg">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold" style={{ color: groupColors[group.group] }}>
-                      {group.group} - {group.label}
-                    </span>
-                    <span className="text-sm font-bold">{group.score.toFixed(1)} điểm</span>
-                  </div>
-                  <p className="text-sm text-sketch-muted mt-1">{group.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3" style={{ fontSize: 22 }}>
-              <GraduationCap size={18} /> Ngành phù hợp
-            </h3>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {(recommendations?.recommended_majors ?? profile.recommended_majors).slice(0, 8).map((major) => (
-                <span key={major} className="px-3 py-1 border-[2px] border-sketch-ink bg-sketch-yellow rounded-full text-sm font-bold">
-                  {major}
-                </span>
-              ))}
-            </div>
-            <p className="text-sm text-sketch-muted">
-              Vai trò gợi ý: {(recommendations?.suitable_roles ?? []).slice(0, 6).join(", ") || "Đang cập nhật."}
-            </p>
-          </div>
-
-          <div className="lg:col-span-2 bg-sketch-surface border-[2px] border-sketch-ink rounded-lg p-4">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3" style={{ fontSize: 22 }}>
-              <Brain size={18} /> Phân tích nhóm
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {groupAnalysis.slice(0, 3).map((group) => (
-                <div key={group.group} className="border-[2px] border-sketch-ink bg-sketch-bg p-3 rounded-lg">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold" style={{ color: groupColors[group.group] }}>
-                      {group.group} - {group.label}
-                    </span>
-                    <span className="text-xs uppercase font-bold text-sketch-muted">{group.level}</span>
-                  </div>
-                  <p className="text-sm text-sketch-muted mb-2">{group.description}</p>
-                  <p className="text-sm">
-                    <b>Kỹ năng:</b> {group.digital_competencies.slice(0, 3).join(", ")}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function ProfileClient() {
   const searchParams = useSearchParams();
   const dcpId = searchParams.get("dcp_id");
-  const [student, setStudent] = useState<Student | null>(() => getStoredStudent());
+  const [student, setStudent] = useState<Student | null>(null);
   const [riasecProfile, setRiasecProfile] = useState<DigitalCompetencyProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isResultLoading, setIsResultLoading] = useState(false);
@@ -328,6 +80,11 @@ export default function ProfileClient() {
       setError("");
 
       try {
+        const stored = getStoredStudent();
+        if (stored) {
+          setStudent(stored);
+        }
+
         if (!getAccessToken()) {
           throw new ApiError("Bạn cần đăng nhập để xem hồ sơ.", 401, null);
         }
@@ -372,135 +129,202 @@ export default function ProfileClient() {
   }, [dcpId]);
 
   return (
-    <>
-      <Navbar />
+    <div className="bg-[#030014] text-white min-h-screen relative overflow-hidden">
+      {/* Immersive Background */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(6,182,212,0.1),transparent_60%)]"></div>
+        <div className="absolute top-[40%] right-[-20%] w-[1000px] h-[1000px] bg-[radial-gradient(circle,rgba(124,58,237,0.05),transparent_60%)]"></div>
+      </div>
+      
+      <div className="relative z-50">
+        <Navbar />
+      </div>
 
-      <main className="px-5 md:px-8 py-10 max-w-7xl mx-auto">
-        <section className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 border-[2px] border-sketch-ink bg-sketch-yellow rounded-full font-bold text-sketch-ink mb-4">
-              <NotebookTabs size={18} /> Hồ sơ học sinh
-            </div>
-
-            <h1 className="text-sketch-red mb-3">
-              {student?.full_name ? `Xin chào, ${student.full_name}` : "Hồ sơ định hướng của bạn"}
-            </h1>
-            <p className="text-sketch-muted text-xl max-w-3xl">
-              Đây là nơi gom thông tin cá nhân, kết quả RIASEC và các bước tiếp theo để hệ thống gợi ý ngành học chính xác hơn.
-            </p>
-
+      <main className="px-5 md:px-8 py-16 max-w-7xl mx-auto relative z-10">
+        
+        {/* Loading & Error States */}
+        {(isLoading || error) && (
+          <section className="mb-12 text-center">
             {isLoading && (
-              <div className="mt-6 inline-flex items-center gap-2 border-[2px] border-sketch-ink bg-sketch-surface px-4 py-3 shadow-sketch rounded-lg font-bold text-sketch-blue">
-                <LoaderCircle size={18} className="animate-spin" /> Đang tải hồ sơ...
+              <div className="inline-flex items-center gap-3 border border-white/10 glass-panel px-6 py-4 rounded-2xl font-bold text-[#06b6d4] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                <LoaderCircle size={20} className="animate-spin" /> Đang đồng bộ hồ sơ hệ thống...
               </div>
             )}
-
             {error && (
-              <div className="mt-6 border-[2px] border-sketch-error bg-red-50 p-4 shadow-sketch rounded-lg">
-                <div className="flex items-center gap-2 font-bold text-sketch-error mb-2">
-                  <AlertTriangle size={18} /> {error}
+              <div className="mx-auto max-w-2xl border border-[#f43f5e]/30 bg-[#f43f5e]/10 p-6 rounded-2xl shadow-[0_10px_30px_rgba(244,63,94,0.15)] flex flex-col items-center justify-center gap-4 text-center">
+                <div className="flex items-center justify-center gap-3 font-bold text-[#f43f5e] text-lg">
+                  <AlertTriangle size={24} /> {error}
                 </div>
-                <Link href="/login" className="text-sketch-blue">
+                <Link href="/login" className="btn-premium px-6 py-2 mt-2">
                   Đi tới đăng nhập
                 </Link>
               </div>
             )}
-          </div>
-
-          <aside className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-5 pinned">
-            <h2 className="flex items-center gap-2 text-sketch-blue mb-3" style={{ fontSize: 26 }}>
-              <Compass size={24} /> Bản đồ hồ sơ
-            </h2>
-            <ProfileMapPreview />
-            <p className="text-sm text-sketch-muted mt-2">
-              Biểu đồ này là preview workflow. Kết quả RIASEC thật sẽ nằm trong màn hội thoại sau khi bạn hoàn tất bài đánh giá.
-            </p>
-          </aside>
-        </section>
-
-        <hr className="hand-drawn-hr" />
-
-        {student ? (
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
-            <InfoPill icon={Mail} label="Email" value={student.email} />
-            <InfoPill icon={MapPin} label="Khu vực" value={`${student.province} - ${student.area_code}`} />
-            <InfoPill icon={Target} label="Tỉnh mục tiêu" value={student.target_province ?? "Chưa cập nhật"} />
-            <InfoPill icon={BookOpen} label="Ngày sinh" value={formatDate(student.dob)} />
-            <InfoPill icon={GraduationCap} label="Nhóm ưu tiên" value={student.priority_group ?? "Không có"} />
-            <InfoPill icon={CheckCircle2} label="Trạng thái" value={student.is_verified ? "Đã xác thực" : "Chưa xác thực"} />
           </section>
-        ) : (
-          <section className="mb-10 border-[2px] border-sketch-ink bg-sketch-surface wobbly shadow-sketch-md p-6 max-w-3xl">
-            <h2 className="text-sketch-blue flex items-center gap-2 mb-3" style={{ fontSize: 26 }}>
-              <UserRound size={24} /> Bạn chưa đăng nhập
-            </h2>
-            <p className="text-sketch-muted mb-5">
-              Đăng nhập để hệ thống lưu hồ sơ, kết quả RIASEC và các gợi ý ngành học theo đúng tài khoản của bạn.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2 border-[2px] border-sketch-ink bg-sketch-red text-white wobbly-btn shadow-sketch">
-                Đăng nhập
-              </Link>
-              <Link href="/signup" className="inline-flex items-center gap-2 px-5 py-2 border-[2px] border-sketch-ink bg-sketch-yellow text-sketch-ink wobbly-btn shadow-sketch">
-                Tạo tài khoản
-              </Link>
+        )}
+
+        {/* Dashboard Profile Card (Logged In) */}
+        {student && !error && (
+          <section className="mb-16 animate-[slideUp_0.8s_ease-out_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+            <div className="glass-panel border border-white/10 rounded-[2.5rem] overflow-hidden bg-black/40 backdrop-blur-2xl relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] group">
+               {/* Premium Cover Gradient */}
+               <div className="h-48 md:h-64 w-full bg-gradient-to-r from-[#7c3aed]/30 via-[#06b6d4]/30 to-[#f59e0b]/30 relative overflow-hidden transition-all duration-700 group-hover:scale-105">
+                  <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 blur-[80px] rounded-full mix-blend-overlay"></div>
+               </div>
+               
+               {/* Profile Info Container */}
+               <div className="px-8 md:px-12 pb-12 relative -mt-20 md:-mt-24">
+                  <div className="flex flex-col md:flex-row gap-8 items-start md:items-end mb-12">
+                     <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-black border-4 border-[#030014] flex items-center justify-center text-6xl font-black text-white relative overflow-hidden shadow-2xl shrink-0 transition-transform duration-500 hover:scale-105 hover:rotate-2">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#06b6d4] to-[#7c3aed] opacity-80"></div>
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
+                        <span className="relative z-10 drop-shadow-md">{student.full_name.charAt(0).toUpperCase()}</span>
+                     </div>
+                     <div className="flex-1">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-white/80 uppercase tracking-wider mb-4 shadow-sm backdrop-blur-md">
+                          <Sparkles size={14} className="text-[#06b6d4]" /> Học viên SketchApp
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-3 flex items-center gap-3">
+                          {student.full_name}
+                          {student.is_verified && <CheckCircle2 size={28} className="text-[#06b6d4]" />}
+                        </h1>
+                        <p className="text-[#94a3b8] text-lg max-w-2xl leading-relaxed">
+                          Hệ thống quản lý thông tin cá nhân và lưu trữ kết quả phân tích năng lực lõi, giúp AI đưa ra lộ trình nghề nghiệp chính xác nhất.
+                        </p>
+                     </div>
+                     <div className="shrink-0 hidden md:block">
+                         <button className="btn-glass px-6 py-3 inline-flex items-center gap-2 opacity-50 cursor-not-allowed">
+                            Chỉnh sửa hồ sơ
+                         </button>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <InfoPill icon={Mail} label="Email" value={student.email} colorClass="bg-blue-500/10 text-blue-400 border-blue-500/20" />
+                    <InfoPill icon={MapPin} label="Khu vực" value={`${student.province} - ${student.area_code}`} colorClass="bg-purple-500/10 text-purple-400 border-purple-500/20" />
+                    <InfoPill icon={Target} label="Tỉnh mục tiêu" value={student.target_province ?? "Chưa cập nhật"} colorClass="bg-rose-500/10 text-rose-400 border-rose-500/20" />
+                    <InfoPill icon={BookOpen} label="Ngày sinh" value={formatDate(student.dob)} colorClass="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" />
+                    <InfoPill icon={GraduationCap} label="Nhóm ưu tiên" value={student.priority_group ?? "Không có"} colorClass="bg-amber-500/10 text-amber-400 border-amber-500/20" />
+                    <InfoPill icon={UserRound} label="Trạng thái" value={student.is_verified ? "Đã xác thực" : "Chưa xác thực"} colorClass="bg-cyan-500/10 text-cyan-400 border-cyan-500/20" />
+                  </div>
+               </div>
             </div>
           </section>
         )}
 
+        {/* Guest View */}
+        {!student && !isLoading && !error && (
+          <section className="mb-16 animate-[slideUp_0.8s_ease-out_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+            <div className="text-center mb-12">
+              <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
+                Hồ sơ định hướng <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#06b6d4]">của bạn</span>
+              </h1>
+              <p className="text-[#94a3b8] text-xl max-w-3xl mx-auto leading-relaxed">
+                Hệ thống quản lý thông tin cá nhân và lưu trữ kết quả phân tích năng lực lõi, giúp AI đưa ra lộ trình nghề nghiệp chính xác nhất.
+              </p>
+            </div>
+            
+            <div className="mx-auto border border-white/10 glass-panel rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-10 max-w-3xl bg-black/40 backdrop-blur-xl text-center">
+              <div className="w-20 h-20 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                <UserRound size={40} className="text-[#06b6d4]" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4">Khách viếng thăm</h2>
+              <p className="text-[#94a3b8] text-lg mb-8 max-w-xl mx-auto">
+                Đăng nhập để hệ thống lưu hồ sơ, kết quả đánh giá RIASEC và xây dựng lộ trình học tập độc quyền cho bạn.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link href="/login" className="btn-premium px-8 py-3 text-lg">
+                  Đăng nhập ngay
+                </Link>
+                <Link href="/signup" className="btn-glass px-8 py-3 text-lg">
+                  Tạo tài khoản
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* RIASEC Result Display */}
         {isResultLoading && (
-          <section className="mb-10 inline-flex items-center gap-2 border-[2px] border-sketch-ink bg-sketch-surface px-4 py-3 shadow-sketch rounded-lg font-bold text-sketch-blue">
-            <LoaderCircle size={18} className="animate-spin" /> Đang tải kết quả RIASEC...
-          </section>
+          <div className="w-full glass-panel border border-[#06b6d4]/30 bg-gradient-to-br from-[#06b6d4]/5 to-[#7c3aed]/10 p-16 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(6,182,212,0.15)] mb-16 animate-[slideUp_0.8s_ease-out_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+            <LoaderCircle size={40} className="animate-spin text-[#06b6d4] mx-auto mb-6" />
+            <h3 className="text-2xl font-bold text-white mb-2">Đang tải báo cáo năng lực</h3>
+            <p className="text-[#94a3b8]">Đang giải mã dữ liệu radar từ máy chủ...</p>
+          </div>
         )}
 
-        {resultError && (
-          <section className="mb-10 border-[2px] border-sketch-error bg-red-50 p-4 shadow-sketch rounded-lg">
-            <div className="flex items-center gap-2 font-bold text-sketch-error">
-              <AlertTriangle size={18} /> {resultError}
+        {resultError && !isResultLoading && (
+          <div className="w-full glass-panel border border-[#f43f5e]/30 bg-[#f43f5e]/10 p-10 rounded-[2.5rem] flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(244,63,94,0.15)] mb-16 animate-[slideUp_0.8s_ease-out_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+            <AlertTriangle size={36} className="text-[#f43f5e] mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">Lỗi truy xuất dữ liệu</h3>
+            <p className="text-[#94a3b8] mb-6">{resultError}</p>
+            <Link href="/chat" className="btn-premium px-8 py-3">Làm lại RIASEC</Link>
+          </div>
+        )}
+
+        {!isResultLoading && riasecProfile && (
+           <div className="mt-8">
+             <RiasecResultSummary profile={riasecProfile} />
+           </div>
+        )}
+
+        {/* Next Steps */}
+        <section className="mb-10 animate-[slideUp_0.8s_ease-out_0.4s_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
+                <Compass size={16} className="text-white"/>
+              </div>
+              Lộ trình Hệ thống
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div className="glass-panel border border-white/10 rounded-3xl p-8 bg-gradient-to-br from-[#7c3aed]/10 to-transparent relative overflow-hidden group hover:border-[#7c3aed]/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(124,58,237,0.2)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#7c3aed] opacity-20 blur-3xl group-hover:opacity-40 transition-opacity"></div>
+              <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3 relative z-10">
+                <span className="w-10 h-10 rounded-full bg-[#7c3aed]/20 flex items-center justify-center text-[#c084fc] border border-[#7c3aed]/30 shadow-[0_0_15px_rgba(124,58,237,0.3)]">1</span>
+                Phân tích RIASEC
+              </h3>
+              <p className="text-[#94a3b8] mb-8 relative z-10 text-lg">
+                Tương tác với AI qua các tình huống giả định để hệ thống giải mã bản đồ năng lực bẩm sinh của bạn.
+              </p>
+              <Link href="/chat" className="inline-flex items-center gap-2 font-bold text-[#c084fc] hover:text-white transition-colors relative z-10">
+                Bắt đầu đánh giá <Sparkles size={16} />
+              </Link>
             </div>
-          </section>
-        )}
 
-        {riasecProfile && <RiasecResultSummary profile={riasecProfile} />}
+            <div className="glass-panel border border-white/10 rounded-3xl p-8 bg-gradient-to-br from-[#06b6d4]/10 to-transparent relative overflow-hidden group hover:border-[#06b6d4]/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(6,182,212,0.2)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#06b6d4] opacity-20 blur-3xl group-hover:opacity-40 transition-opacity"></div>
+              <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3 relative z-10">
+                <span className="w-10 h-10 rounded-full bg-[#06b6d4]/20 flex items-center justify-center text-[#06b6d4] border border-[#06b6d4]/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">2</span>
+                Khám phá Ngành
+              </h3>
+              <p className="text-[#94a3b8] relative z-10 text-lg">
+                Dựa trên báo cáo RIASEC, hệ thống đối chiếu với kho dữ liệu để đưa ra các gợi ý nhóm ngành nghề phù hợp nhất.
+              </p>
+            </div>
 
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-5 tape">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3">
-              <Compass size={22} /> 1. Làm RIASEC
-            </h3>
-            <p className="text-sketch-muted mb-4">
-              Trả lời các tình huống ngắn để hệ thống xác định nhóm Holland Code nổi bật.
-            </p>
-            <Link href="/chat" className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-sketch-ink bg-sketch-red text-white wobbly-btn shadow-sketch">
-              Bắt đầu đánh giá
-            </Link>
-          </div>
+            <div className="glass-panel border border-white/10 rounded-3xl p-8 bg-gradient-to-br from-[#f59e0b]/10 to-transparent relative overflow-hidden group hover:border-[#f59e0b]/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(245,158,11,0.2)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#f59e0b] opacity-20 blur-3xl group-hover:opacity-40 transition-opacity"></div>
+              <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3 relative z-10">
+                <span className="w-10 h-10 rounded-full bg-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] border border-[#f59e0b]/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]">3</span>
+                La bàn Tuyển sinh
+              </h3>
+              <p className="text-[#94a3b8] mb-8 relative z-10 text-lg">
+                Dự đoán chính xác cơ hội đỗ đại học dựa trên năng lực, điểm chuẩn lịch sử và xu hướng ngành nghề.
+              </p>
+              <Link href="/admission" className="inline-flex items-center gap-2 font-bold text-[#f59e0b] hover:text-white transition-colors relative z-10">
+                Khám phá La bàn <Compass size={16} />
+              </Link>
+            </div>
 
-          <div className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-5 tape rotate-[0.5deg]">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3">
-              <GraduationCap size={22} /> 2. Xem ngành phù hợp
-            </h3>
-            <p className="text-sketch-muted">
-              Sau khi hoàn tất RIASEC, hệ thống trả radar chart, nhóm nổi bật, ngành học, vai trò nghề nghiệp và kỹ năng nên phát triển.
-            </p>
-          </div>
-
-          <div className="relative bg-sketch-surface border-[2px] border-sketch-ink wobbly shadow-sketch-md p-5 tape -rotate-[0.5deg]">
-            <h3 className="text-sketch-blue flex items-center gap-2 mb-3">
-              <Sparkles size={22} /> 3. Đối chiếu tuyển sinh
-            </h3>
-            <p className="text-sketch-muted mb-4">
-              Khi có điểm học tập và RIASEC, phần la bàn tuyển sinh sẽ giúp so sánh lựa chọn an toàn, vừa sức và tham vọng.
-            </p>
-            <Link href="/admission" className="text-sketch-blue">
-              Xem la bàn tuyển sinh
-            </Link>
           </div>
         </section>
+
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }
+
