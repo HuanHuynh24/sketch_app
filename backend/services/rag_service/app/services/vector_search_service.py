@@ -5,21 +5,19 @@ from typing import Iterable
 
 from google import genai
 from google.genai import types
-from sqlalchemy import func, not_
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.vector_doc import DocumentChunk
+from app.repositories.document_chunk_repository import DocumentChunkRepository
 
 
 logger = logging.getLogger(__name__)
 
-DOMESTIC_COUNTRIES = ("vietnam", "viet nam", "việt nam", "vn")
-
 
 class VectorSearchService:
     def __init__(self, db: Session):
-        self.db = db
+        self.document_chunk_repo = DocumentChunkRepository(db)
         self.embedding_model = settings.GEMINI_EMBEDDING_MODEL
         self.client = None
 
@@ -43,11 +41,11 @@ class VectorSearchService:
             return []
 
         query_embedding = await self.embed_query(query)
-
-        distance = DocumentChunk.embedding.cosine_distance(query_embedding).label("distance")
-        db_query = self.db.query(DocumentChunk, distance)
-        db_query = self._apply_country_scope(db_query, country_scope)
-        rows = db_query.order_by(distance).limit(limit).all()
+        rows = self.document_chunk_repo.search_similar(
+            query_embedding=query_embedding,
+            limit=limit,
+            country_scope=country_scope,
+        )
 
         results = []
         for chunk, score in rows:
@@ -76,23 +74,6 @@ class VectorSearchService:
             )
 
         return results
-
-    def _apply_country_scope(self, db_query, country_scope: str | None):
-        if not country_scope:
-            return db_query
-
-        country = func.lower(DocumentChunk.chunk_metadata["country"].astext)
-
-        if country_scope == "domestic":
-            return db_query.filter(country.in_(DOMESTIC_COUNTRIES))
-
-        if country_scope == "foreign":
-            return db_query.filter(
-                DocumentChunk.chunk_metadata["country"].astext.isnot(None),
-                not_(country.in_(DOMESTIC_COUNTRIES)),
-            )
-
-        raise ValueError(f"Unsupported country_scope: {country_scope}")
 
     async def save_chunk(self, content: str, meta: dict):
         content_hash = meta.get("content_hash")
@@ -124,15 +105,7 @@ class VectorSearchService:
             return []
 
         hashes = [chunk["content_hash"] for chunk in prepared_chunks if chunk.get("content_hash")]
-        existing_hashes = set()
-        if hashes:
-            existing_hashes = {
-                row[0]
-                for row in self.db.query(DocumentChunk.content_hash)
-                .filter(DocumentChunk.content_hash.in_(hashes))
-                .all()
-            }
-
+        existing_hashes = self.document_chunk_repo.get_existing_hashes(hashes)
         new_chunks = [
             chunk
             for chunk in prepared_chunks
@@ -146,26 +119,10 @@ class VectorSearchService:
             batch_size=settings.RAG_EMBEDDING_BATCH_SIZE,
         )
 
-        records = []
         for chunk, embedding in zip(new_chunks, embeddings):
-            record = DocumentChunk(
-                source_path=chunk["source_path"],
-                source_name=chunk["source_name"],
-                region=chunk.get("region"),
-                university_name=chunk.get("university_name"),
-                chunk_index=chunk["chunk_index"],
-                content_hash=chunk["content_hash"],
-                content=chunk["content"],
-                embedding=embedding,
-                chunk_metadata=chunk.get("chunk_metadata") or {},
-            )
-            self.db.add(record)
-            records.append(record)
+            chunk["embedding"] = embedding
 
-        self.db.commit()
-        for record in records:
-            self.db.refresh(record)
-
+        records = self.document_chunk_repo.create_many(new_chunks)
         logger.info("Saved %s new document chunks to pgvector", len(records))
         return records
 

@@ -1,4 +1,6 @@
 import logging
+import re
+import unicodedata
 
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
@@ -6,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.schemas.query import SearchQueryModel
 from app.services.admission_client import AdmissionClient
 from app.services.document_ingestion_service import DocumentIngestionService
+from app.services.document_rendering_service import DocumentRenderingService
 from app.services.query_builder import QueryBuilderService
 from app.services.vector_search_service import VectorSearchService
 
@@ -18,11 +21,11 @@ VECTOR_OVERSAMPLE_LIMIT = 40
 
 class SearchEngine:
     def __init__(self, db: Session):
-        self.db = db
         self.query_builder = QueryBuilderService()
         self.admission_client = AdmissionClient()
         self.vector_search = VectorSearchService(db)
         self.ingestion_service = DocumentIngestionService(db)
+        self.document_renderer = DocumentRenderingService()
 
     async def search_universities(
         self,
@@ -233,8 +236,12 @@ class SearchEngine:
         if not isinstance(logo, list):
             logo = []
 
+        source_path = metadata.get("source_path") or program.get("source_url")
+        rendered_document = self.document_renderer.render_source_document(source_path)
+
         content = {
             "overview": self._build_overview(program, university_name, major_name),
+            "document": rendered_document,
             "matched_context": program.get("content"),
             "career_opportunities": self._build_career_opportunities(riasec_result),
             "tuition_fee": {
@@ -269,7 +276,7 @@ class SearchEngine:
             },
             "source": {
                 "url": program.get("source_url"),
-                "path": metadata.get("source_path"),
+                "path": source_path,
                 "country": program.get("country"),
                 "city": program.get("city"),
                 "degree_level": program.get("degree_level"),
@@ -281,10 +288,56 @@ class SearchEngine:
             "student_id": str(student_id),
             "logo": logo,
             "content": content,
+            "description": self._build_card_description(
+                program=program,
+                metadata=metadata,
+                university_name=university_name,
+                recommendation_type=recommendation_type,
+            ),
             "type": recommendation_type,
             "name_universities": university_name[:200],
             "name_majors": major_name[:200],
         }
+
+    def _build_card_description(
+        self,
+        program: dict,
+        metadata: dict,
+        university_name: str,
+        recommendation_type: int,
+    ) -> str:
+        if recommendation_type == 0:
+            school_type = self._first_text(
+                metadata.get("school_type"),
+                self._extract_labeled_value(program.get("content"), "loai truong", "school type"),
+                "Đang cập nhật",
+            )
+            address = self._first_text(
+                metadata.get("address"),
+                self._extract_labeled_value(program.get("content"), "dia chi", "address"),
+                "Đang cập nhật",
+            )
+            return f"Loại trường: {school_type}; Địa chỉ: {address}."
+
+        country = self._first_text(
+            program.get("country"),
+            metadata.get("country"),
+            "Đang cập nhật",
+        )
+        city = self._first_text(
+            metadata.get("city"),
+            self._extract_labeled_value(program.get("content"), "thanh pho", "city"),
+            "Đang cập nhật",
+        )
+        school_type = self._first_text(
+            metadata.get("school_type"),
+            self._extract_labeled_value(program.get("content"), "loai truong", "school type", "type"),
+            "Đang cập nhật",
+        )
+        return (
+            f"Tên trường: {university_name}; Quốc gia: {country}; "
+            f"Thành phố: {city}; Loại trường: {school_type}."
+        )
 
     def _build_overview(
         self,
@@ -381,6 +434,35 @@ class SearchEngine:
                 return text
 
         return ""
+
+    def _extract_labeled_value(self, text: str | None, *labels: str) -> str | None:
+        if not text:
+            return None
+
+        normalized_labels = {self._normalize_text(label) for label in labels}
+        for line in text.splitlines():
+            cleaned = re.sub(r"^[\s>*-]+", "", line).strip()
+            cleaned = re.sub(r"[*_`]", "", cleaned).strip()
+            if ":" not in cleaned:
+                continue
+
+            raw_label, raw_value = cleaned.split(":", 1)
+            if self._normalize_text(raw_label) not in normalized_labels:
+                continue
+
+            value = re.sub(r"[<>{}\[\]()*_`]", "", raw_value).strip()
+            if value:
+                return value
+
+        return None
+
+    def _normalize_text(self, value: str) -> str:
+        value = value.replace("Đ", "D").replace("đ", "d")
+        normalized = unicodedata.normalize("NFD", value)
+        without_accents = "".join(
+            char for char in normalized if unicodedata.category(char) != "Mn"
+        )
+        return without_accents.lower().strip()
 
     def _to_float(self, value) -> float | None:
         if value is None:

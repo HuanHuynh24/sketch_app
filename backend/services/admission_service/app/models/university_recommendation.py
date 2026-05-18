@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import CheckConstraint, Column, DateTime, Index, Integer, String, func, text
+from sqlalchemy import CheckConstraint, Column, DateTime, Index, Integer, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.core.config import settings
@@ -31,6 +31,7 @@ class UniversityRecommendation(Base, SchemaMixin):
     student_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     logo = Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
     content = Column(JSONB, nullable=False)
+    description = Column(Text, nullable=False)
     type = Column(Integer, nullable=False, default=0, server_default="0", index=True)
     name_universities = Column(String(200), nullable=False, index=True)
     name_majors = Column(String(200), nullable=False, index=True)

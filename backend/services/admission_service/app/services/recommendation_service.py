@@ -3,44 +3,26 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.models.university_recommendation import UniversityRecommendation
+from app.repositories.recommendation_repository import UniversityRecommendationRepository
 from app.schemas.recommendation import UniversityRecommendationCreate
 
 
 class UniversityRecommendationService:
     def __init__(self, db: Session):
-        self.db = db
+        self.recommendation_repo = UniversityRecommendationRepository(db)
 
     def list_by_student_id(
         self,
         student_id: UUID,
     ) -> list[UniversityRecommendation]:
-        return (
-            self.db.query(UniversityRecommendation)
-            .filter(UniversityRecommendation.student_id == student_id)
-            .order_by(UniversityRecommendation.updated_at.desc())
-            .all()
-        )
+        return self.recommendation_repo.list_by_student_id(student_id)
 
     def replace_for_student(
         self,
         student_id: UUID,
         recommendations: list[UniversityRecommendationCreate],
     ) -> list[UniversityRecommendation]:
-        (
-            self.db.query(UniversityRecommendation)
-            .filter(UniversityRecommendation.student_id == student_id)
-            .delete(synchronize_session=False)
+        return self.recommendation_repo.replace_for_student(
+            student_id=student_id,
+            recommendations=recommendations,
         )
-
-        created = [
-            UniversityRecommendation(**item.model_dump())
-            for item in recommendations
-        ]
-
-        self.db.add_all(created)
-        self.db.commit()
-
-        for item in created:
-            self.db.refresh(item)
-
-        return created

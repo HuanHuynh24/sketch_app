@@ -1,55 +1,20 @@
 # FE API Guide
 
-Tài liệu này hướng dẫn Frontend gọi Backend qua API Gateway trong môi trường local.
+Tài liệu này dành cho frontend dev tích hợp luồng hồ sơ học sinh, RIASEC và gợi ý trường đại học.
 
-FE chỉ gọi gateway:
+FE chỉ gọi qua API Gateway:
 
 ```txt
 http://localhost:8000
 ```
 
-Không gọi trực tiếp các service nội bộ như `profile_service`, `riasec_service`, `admission_service`, `rag_service`.
+Không gọi trực tiếp các service nội bộ từ FE.
 
-## 1. Cấu Hình FE
-
-Với Next.js, tạo `frontend/.env.local`:
+## 1. Base Config
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
-
-Tạo API base URL:
-
-```ts
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-```
-
-## 2. Quy Tắc Chung
-
-Các prefix chính:
-
-```txt
-Profile: /api/profile
-RIASEC : /api/riasec
-```
-
-API cần đăng nhập phải gửi:
-
-```txt
-Authorization: Bearer ACCESS_TOKEN
-```
-
-Sau đăng nhập hoặc đăng ký, FE nên lưu:
-
-```ts
-localStorage.setItem("access_token", data.access_token);
-localStorage.setItem("student", JSON.stringify(data.student));
-```
-
-Không cần gửi `student_id` khi gọi RIASEC. Backend tự lấy học sinh hiện tại từ token qua Profile Service.
-
-## 3. API Client Gợi Ý
 
 ```ts
 const API_BASE_URL =
@@ -83,7 +48,6 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     let message = "Request failed";
-
     try {
       const error = await res.json();
       message = typeof error.detail === "string"
@@ -92,7 +56,6 @@ export async function apiFetch<T>(
     } catch {
       message = await res.text();
     }
-
     throw new Error(message);
   }
 
@@ -100,9 +63,9 @@ export async function apiFetch<T>(
 }
 ```
 
-## 4. Auth APIs
+## 2. Auth
 
-### Đăng Ký
+### Register
 
 ```txt
 POST /api/profile/auth/register
@@ -112,58 +75,29 @@ Request:
 
 ```json
 {
-  "full_name": "Nguyen Van Test",
-  "email": "test_riasec@example.com",
+  "full_name": "Nguyen Van A",
+  "email": "student@example.com",
   "password": "123456",
-  "province": "Khanh Hoa",
+  "province": "TP.HCM",
   "area_code": "KV2",
   "dob": "2007-05-20",
   "priority_group": "01",
-  "target_province": "TP.HCM"
+  "target_province": "TP.HCM",
+  "target_country": "Vietnam",
+  "target_budget": 15000000
 }
 ```
 
-Response:
+Response gồm `access_token`, `token_type`, `expires_in`, `student`.
 
-```json
-{
-  "access_token": "jwt_token",
-  "token_type": "bearer",
-  "expires_in": 3600,
-  "student": {
-    "student_id": "uuid",
-    "full_name": "Nguyen Van Test",
-    "email": "test_riasec@example.com",
-    "dob": "2007-05-20",
-    "province": "Khanh Hoa",
-    "area_code": "KV2",
-    "priority_group": "01",
-    "target_province": "TP.HCM",
-    "is_active": true,
-    "is_verified": false,
-    "created_at": "2026-05-16T10:00:00",
-    "updated_at": "2026-05-16T10:00:00"
-  }
-}
-```
-
-FE:
+FE lưu:
 
 ```ts
-export async function registerStudent(payload: RegisterPayload) {
-  const data = await apiFetch<AuthResponse>("/api/profile/auth/register", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-
-  localStorage.setItem("access_token", data.access_token);
-  localStorage.setItem("student", JSON.stringify(data.student));
-
-  return data;
-}
+localStorage.setItem("access_token", data.access_token);
+localStorage.setItem("student", JSON.stringify(data.student));
 ```
 
-### Đăng Nhập
+### Login
 
 ```txt
 POST /api/profile/auth/login
@@ -173,49 +107,97 @@ Request:
 
 ```json
 {
-  "email": "test_riasec@example.com",
+  "email": "student@example.com",
   "password": "123456"
 }
 ```
 
-Response giống API đăng ký.
-
-### Lấy Học Sinh Hiện Tại
+### Get Current User
 
 ```txt
 GET /api/profile/auth/me
 Authorization: Bearer ACCESS_TOKEN
 ```
 
-FE nên gọi API này khi reload app để kiểm tra token còn hợp lệ.
+## 3. Profile & Academic Record
 
-```ts
-export async function getMe() {
-  return apiFetch<Student>("/api/profile/auth/me", {
-    method: "GET",
-    auth: true,
-  });
+### Get My Profile
+
+```txt
+GET /api/profile/students/me
+Authorization: Bearer ACCESS_TOKEN
+```
+
+### Update My Profile
+
+```txt
+PATCH /api/profile/students/me
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Request, chỉ gửi field cần sửa:
+
+```json
+{
+  "target_country": "Vietnam",
+  "target_province": "TP.HCM",
+  "target_budget": 15000000
 }
 ```
 
-Nếu nhận `401`, xóa token và đưa user về màn login.
-
-## 5. RIASEC Flow
-
-Flow chính:
+### Upsert Academic Record
 
 ```txt
-1. POST /api/riasec/sessions
-2. Hiển thị question.content
-3. POST /api/riasec/sessions/{session_id}/answers
-4. Nếu status = in_progress: hiển thị assistant_message.content
-5. Nếu status = completed: lấy dcp_id và mở màn kết quả
-6. GET /api/riasec/profiles/{dcp_id}
+PUT /api/profile/students/me/academic-record
+Authorization: Bearer ACCESS_TOKEN
 ```
 
-`current_step` là số câu trả lời hợp lệ đã được chấm. Nếu user trả lời không hợp lệ, `current_step` không tăng.
+Request:
 
-## 6. Tạo Phiên RIASEC
+```json
+{
+  "score_math": 8,
+  "score_literature": 6,
+  "optional_subject_1": "Hóa học",
+  "score_optional_1": 8,
+  "optional_subject_2": "Vật lý",
+  "score_optional_2": 8.5,
+  "exam_year": 2026,
+  "ielts_score": 6,
+  "toeic_score": 0
+}
+```
+
+Validation:
+
+- Điểm môn học: `0..10`
+- IELTS: `0..9`
+- TOEIC: `0..990`
+- `optional_subject_1` và `optional_subject_2` không được trùng nhau.
+
+### Get Academic Record
+
+```txt
+GET /api/profile/students/me/academic-record
+Authorization: Bearer ACCESS_TOKEN
+```
+
+## 4. RIASEC Flow
+
+Flow FE chuẩn:
+
+```txt
+1. Login/register, lấy access_token.
+2. Update profile mục tiêu học tập nếu cần.
+3. Upsert academic record.
+4. POST /api/riasec/sessions để bắt đầu bài RIASEC.
+5. POST /api/riasec/sessions/{session_id}/answers cho từng câu trả lời.
+6. Khi status = completed, lấy dcp_id.
+7. POST /api/rag/search/universities với dcp_id để sinh gợi ý trường.
+8. GET /api/admission/recommendations/students/{student_id} để xem lại kết quả đã lưu.
+```
+
+### Start RIASEC Session
 
 ```txt
 POST /api/riasec/sessions
@@ -224,81 +206,7 @@ Authorization: Bearer ACCESS_TOKEN
 
 Không gửi body.
 
-Response:
-
-```json
-{
-  "session": {
-    "session_id": "uuid",
-    "student_id": "uuid",
-    "status": "in_progress",
-    "current_step": 0,
-    "min_steps": 5,
-    "max_steps": 7,
-    "scores": {
-      "R": 0,
-      "I": 0,
-      "A": 0,
-      "S": 0,
-      "E": 0,
-      "C": 0
-    },
-    "confidence": {
-      "R": 0,
-      "I": 0,
-      "A": 0,
-      "S": 0,
-      "E": 0,
-      "C": 0
-    },
-    "entropy": 0,
-    "current_focus_groups": [],
-    "riasec_code": null,
-    "termination_reason": null,
-    "final_summary": null,
-    "created_at": "2026-05-16T10:00:00",
-    "updated_at": "2026-05-16T10:00:00",
-    "completed_at": null
-  },
-  "question": {
-    "message_id": "uuid",
-    "session_id": "uuid",
-    "role": "assistant",
-    "content": "Gian hàng hướng nghiệp của lớp sắp mở cửa...",
-    "message_type": "anchor_scenario",
-    "metadata_json": {
-      "type": "anchor_scenario",
-      "content": "Gian hàng hướng nghiệp của lớp sắp mở cửa...",
-      "focus_groups": ["R", "I", "A", "S", "E", "C"],
-      "context": "anchor",
-      "question_style": "role_choice"
-    },
-    "riasec_signal": null,
-    "created_at": "2026-05-16T10:00:00"
-  }
-}
-```
-
-FE:
-
-```ts
-export async function startRiasecSession() {
-  return apiFetch<StartRiasecResponse>("/api/riasec/sessions", {
-    method: "POST",
-    auth: true,
-  });
-}
-```
-
-Sau khi nhận response:
-
-```ts
-setSession(data.session);
-setQuestion(data.question.content);
-setMessages([data.question]);
-```
-
-## 7. Gửi Câu Trả Lời
+### Submit RIASEC Answer
 
 ```txt
 POST /api/riasec/sessions/{session_id}/answers
@@ -309,571 +217,337 @@ Request:
 
 ```json
 {
-  "answer_text": "Em sẽ phân tích thông tin trước vì em muốn biết học sinh đang quan tâm ngành nào, sau đó mới đề xuất cách trình bày cho gian hàng."
+  "answer_text": "Em sẽ phân tích nhu cầu trước, sau đó chọn hướng trình bày phù hợp..."
 }
 ```
 
-`answer_text` bắt buộc từ 1 đến 3000 ký tự.
+`answer_text`: 1 đến 3000 ký tự.
 
-### 7.1. Response Tiếp Tục
+Nếu response có `assistant_message.message_type === "answer_warning"` thì FE không tăng progress.
 
-```json
-{
-  "status": "in_progress",
-  "session": {
-    "session_id": "uuid",
-    "status": "in_progress",
-    "current_step": 1,
-    "scores": {
-      "R": 0,
-      "I": 1.5,
-      "A": 0.5,
-      "S": 0,
-      "E": 0,
-      "C": 0.5
-    },
-    "confidence": {
-      "R": 0,
-      "I": 0.75,
-      "A": 0.25,
-      "S": 0,
-      "E": 0,
-      "C": 0.25
-    },
-    "riasec_code": "IAC"
-  },
-  "user_message": {
-    "message_type": "answer",
-    "content": "Em sẽ phân tích thông tin trước...",
-    "riasec_signal": {
-      "scores": {
-        "I": 1.5,
-        "A": 0.5,
-        "C": 0.5
-      },
-      "primary_groups": ["I"],
-      "detected_traits": ["phân tích thông tin"],
-      "evidence": [
-        {
-          "group": "I",
-          "quote": "phân tích thông tin",
-          "strength": 1.5,
-          "confidence": 0.75
-        }
-      ]
-    }
-  },
-  "assistant_message": {
-    "message_type": "adaptive_scenario",
-    "content": "Video giới thiệu ngành của lớp đang bị nhận xét là vừa thiếu thông tin vừa chưa cuốn..."
-  },
-  "dcp_id": null
-}
-```
-
-FE xử lý:
-
-```ts
-export async function submitRiasecAnswer(
-  sessionId: string,
-  answerText: string
-) {
-  return apiFetch<SubmitAnswerResponse>(
-    `/api/riasec/sessions/${sessionId}/answers`,
-    {
-      method: "POST",
-      auth: true,
-      body: JSON.stringify({ answer_text: answerText }),
-    }
-  );
-}
-```
-
-Nếu `status === "in_progress"`:
-
-```ts
-setSession(data.session);
-setWarning(null);
-setAnswerText("");
-setMessages((prev) => [
-  ...prev,
-  data.user_message,
-  data.assistant_message,
-].filter(Boolean));
-```
-
-### 7.2. Response Câu Trả Lời Không Hợp Lệ
-
-```json
-{
-  "status": "in_progress",
-  "session": {
-    "current_step": 1,
-    "status": "in_progress"
-  },
-  "user_message": {
-    "message_type": "invalid_answer",
-    "content": "abc"
-  },
-  "assistant_message": {
-    "message_type": "answer_warning",
-    "content": "Câu trả lời của bạn chưa đủ rõ hoặc chưa đúng trọng tâm..."
-  },
-  "dcp_id": null
-}
-```
-
-FE xử lý:
-
-```ts
-if (data.assistant_message?.message_type === "answer_warning") {
-  setWarning(data.assistant_message.content);
-  return;
-}
-```
-
-Không tăng progress, không đổi câu hỏi chính.
-
-### 7.3. Response Hoàn Tất
+Khi hoàn tất, response có:
 
 ```json
 {
   "status": "completed",
-  "session": {
-    "session_id": "uuid",
-    "status": "completed",
-    "current_step": 5,
-    "riasec_code": "IAC",
-    "termination_reason": "confidence_threshold_met",
-    "final_summary": "Kết quả hiện tại cho thấy..."
-  },
-  "assistant_message": {
-    "message_type": "final_result",
-    "content": "Bài đánh giá đã hoàn tất. Mã RIASEC của bạn là IAC...",
-    "metadata_json": {
-      "dcp_id": "uuid",
-      "riasec_code": "IAC",
-      "termination_reason": "confidence_threshold_met",
-      "radar_chart": {},
-      "dominant_groups": [],
-      "group_analysis": [],
-      "career_recommendations": {}
-    }
-  },
-  "dcp_id": "uuid"
+  "dcp_id": "f3a6a704-80c2-4c83-b59a-4b4cb0681178"
 }
 ```
 
-FE có thể dùng nhanh `assistant_message.metadata_json` để render kết quả ngay, nhưng màn kết quả nên gọi lại `GET /api/riasec/profiles/{dcp_id}` để lấy dữ liệu chuẩn.
-
-```ts
-if (data.status === "completed" && data.dcp_id) {
-  router.push(`/riasec/result/${data.dcp_id}`);
-}
-```
-
-## 8. Lấy Kết Quả RIASEC
+### Get RIASEC Profile
 
 ```txt
 GET /api/riasec/profiles/{dcp_id}
 Authorization: Bearer ACCESS_TOKEN
 ```
 
-Response:
+## 5. Generate University Recommendations
+
+Endpoint này gọi RAG, lấy profile + academic record + RIASEC, search trong pgvector, rồi lưu kết quả vào `admission.university_recommendations`.
+
+```txt
+POST /api/rag/search/universities
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Request production:
 
 ```json
 {
-  "dcp_id": "uuid",
-  "student_id": "uuid",
-  "session_id": "uuid",
-  "riasec_code": "IAC",
-  "scores": {
-    "R": 1,
-    "I": 6,
-    "A": 4,
-    "S": 2,
-    "E": 1,
-    "C": 3
+  "dcp_id": "f3a6a704-80c2-4c83-b59a-4b4cb0681178"
+}
+```
+
+Yêu cầu:
+
+- Bắt buộc có `Authorization` khi chỉ gửi `dcp_id`.
+- Học sinh phải có profile và academic record.
+- `dcp_id` phải thuộc đúng học sinh đang đăng nhập.
+
+Request test không cần token:
+
+```json
+{
+  "override_profile": {
+    "student_id": "00000000-0000-0000-0000-000000000001",
+    "target_country": "Vietnam",
+    "target_province": "TP.HCM",
+    "target_budget": 15000000,
+    "score_math": 8,
+    "score_literature": 6,
+    "optional_subject_1": "Hóa học",
+    "score_optional_1": 8,
+    "optional_subject_2": "Vật lý",
+    "score_optional_2": 8.5,
+    "ielts_score": 6,
+    "toeic_score": 0
   },
-  "confidence": {
-    "R": 0.2,
-    "I": 0.85,
-    "A": 0.7,
-    "S": 0.4,
-    "E": 0.2,
-    "C": 0.6
-  },
-  "career_groups": [
-    "Công nghệ thông tin",
-    "Khoa học dữ liệu",
-    "AI",
-    "Thiết kế",
-    "Truyền thông"
-  ],
-  "digital_competencies": {
-    "I": ["Phân tích dữ liệu", "Tư duy logic"],
-    "A": ["Sáng tạo nội dung số", "Thiết kế trải nghiệm"],
-    "C": ["Quản lý dữ liệu", "Tự động hóa quy trình"]
-  },
-  "recommended_majors": [
-    "Công nghệ thông tin",
-    "Khoa học dữ liệu",
-    "Thiết kế UX/UI"
-  ],
-  "summary": "Kết quả hiện tại cho thấy bạn nổi bật ở nhóm IAC...",
-  "created_at": "2026-05-16T10:10:00",
-  "radar_chart": {
-    "type": "riasec_radar",
-    "max_score": 14,
-    "axes": [
-      {
-        "group": "R",
-        "label": "Thực tế - Kỹ thuật",
-        "score": 1,
-        "max_score": 14,
-        "normalized_score": 7.14,
-        "confidence": 0.2,
-        "description": "Thích thao tác trực tiếp, thử nghiệm, thiết bị..."
-      }
+  "override_riasec": {
+    "riasec_code": "ECI",
+    "career_groups": ["Kinh doanh", "Marketing", "Công nghệ thông tin"],
+    "recommended_majors": [
+      "Quản trị kinh doanh",
+      "Marketing",
+      "Tài chính ngân hàng",
+      "Công nghệ thông tin"
     ]
-  },
-  "dominant_groups": [
-    {
-      "group": "I",
-      "label": "Nghiên cứu - Phân tích",
-      "score": 6,
-      "confidence": 0.85,
-      "description": "Thích tìm hiểu nguyên nhân, phân tích dữ liệu..."
-    }
-  ],
-  "group_analysis": [
-    {
-      "group": "I",
-      "name": "Investigative",
-      "label": "Nghiên cứu - Phân tích",
-      "score": 6,
-      "confidence": 0.85,
-      "level": "medium",
-      "description": "Thích tìm hiểu nguyên nhân, phân tích dữ liệu...",
-      "career_groups": ["Công nghệ thông tin", "Khoa học dữ liệu"],
-      "recommended_majors": ["Công nghệ thông tin", "Khoa học dữ liệu"],
-      "suitable_roles": ["Backend Developer", "Data Analyst"],
-      "digital_competencies": ["Phân tích dữ liệu", "Tư duy logic"]
-    }
-  ],
-  "career_recommendations": {
-    "riasec_code": "IAC",
-    "career_groups": ["Công nghệ thông tin", "Khoa học dữ liệu"],
-    "recommended_majors": ["Công nghệ thông tin", "Khoa học dữ liệu"],
-    "suitable_roles": ["Backend Developer", "Data Analyst"],
-    "digital_competencies": {
-      "I": ["Phân tích dữ liệu", "Tư duy logic"],
-      "A": ["Sáng tạo nội dung số"],
-      "C": ["Quản lý dữ liệu"]
-    }
   }
 }
 ```
 
-FE:
+Response chính:
 
-```ts
-export async function getRiasecProfile(dcpId: string) {
-  return apiFetch<DigitalCompetencyProfile>(
-    `/api/riasec/profiles/${dcpId}`,
-    {
-      method: "GET",
-      auth: true,
-    }
-  );
-}
-```
-
-## 9. Render Radar Chart
-
-Dùng `profile.radar_chart.axes`.
-
-Mỗi axis có:
-
-```ts
+```json
 {
-  group: "R" | "I" | "A" | "S" | "E" | "C";
-  label: string;
-  score: number;
-  max_score: number;
-  normalized_score: number; // 0-100
-  confidence: number;       // 0-1
-  description: string;
+  "query_used": {
+    "optimized_query": "Tuyển sinh ngành Quản trị kinh doanh, Marketing...",
+    "target_countries": ["Vietnam"],
+    "target_majors": ["Quản trị kinh doanh", "Marketing"],
+    "budget_limit_usd": 600,
+    "min_ielts": 6,
+    "keywords": ["học bổng", "học phí", "điều kiện xét tuyển"]
+  },
+  "results_count": 10,
+  "is_background_crawling": false,
+  "saved_recommendations_count": 10,
+  "recommendations": [
+    {
+      "id": "recommendation_uuid",
+      "student_id": "student_uuid",
+      "logo": [
+        "https://tuyensinhso.vn/include/elfinder/../../images/files/tuyensinhso.com/truong-dai-hoc-a.jpg"
+      ],
+      "description": "Loại trường: Dân lập; Địa chỉ: Khu đô thị công nghệ FPT Đà Nẵng, Phường Ngũ Hành Sơn, TP. Đà Nẵng.",
+      "content": {
+        "overview": "Tổng quan gợi ý...",
+        "document": {
+          "format": "html",
+          "source_path": "da-nang/dai-hoc-fpt-da-nang.md",
+          "markdown": "# Đại học FPT Đà Nẵng\n\nToàn bộ nội dung markdown gốc...",
+          "html": "<h1>Đại học FPT Đà Nẵng</h1><p>Toàn bộ nội dung đã format HTML...</p>"
+        },
+        "matched_context": "Đoạn markdown liên quan được match từ pgvector...",
+        "career_opportunities": ["Business Analyst", "Marketing Executive"],
+        "tuition_fee": {
+          "value": null,
+          "currency": null,
+          "display": null
+        },
+        "admission_method": {
+          "student_scores": {
+            "math": 8,
+            "literature": 6,
+            "optional_subject_1": "Hóa học",
+            "score_optional_1": 8,
+            "optional_subject_2": "Vật lý",
+            "score_optional_2": 8.5,
+            "ielts": 6,
+            "toeic": 0
+          }
+        },
+        "advantages": [
+          "Country matches the student's target country.",
+          "Strong semantic match in the university knowledge base."
+        ],
+        "riasec": {
+          "code": "ECI",
+          "recommended_majors": ["Quản trị kinh doanh", "Marketing"],
+          "career_groups": ["Kinh doanh", "Marketing"]
+        },
+        "source": {
+          "url": "da-nang/dai-hoc-fpt-da-nang.md",
+          "path": "da-nang/dai-hoc-fpt-da-nang.md",
+          "country": "Vietnam",
+          "city": "da-nang",
+          "similarity_score": 0.21
+        }
+      },
+      "type": 0,
+      "name_universities": "Đại học FPT Đà Nẵng",
+      "name_majors": "Quản trị kinh doanh",
+      "updated_at": "2026-05-18T10:00:00Z"
+    }
+  ],
+  "data": {
+    "domestic": [],
+    "foreign": []
+  }
 }
 ```
 
-Nếu dùng chart library, map dữ liệu:
+Business rule:
 
-```ts
-const radarData = profile.radar_chart.axes.map((axis) => ({
-  group: axis.group,
-  label: axis.label,
-  score: axis.normalized_score,
-  rawScore: axis.score,
-  confidence: axis.confidence,
-}));
-```
+- Trả tối đa 5 trường trong nước và 5 trường ngoài nước.
+- `type = 0`: trường trong nước.
+- `type = 1`: trường ngoài nước.
+- `logo` là mảng hình ảnh/gallery lấy từ markdown. Tên field là `logo` nhưng FE nên hiểu là `images`.
+- `description` là text ngắn cho card preview. FE không cần tự build lại.
+- `content.document.markdown` là toàn bộ file markdown gốc của trường.
+- `content.document.html` là HTML render sẵn từ markdown để FE hiển thị trang chi tiết.
+- `content.matched_context` là chunk được pgvector match, chỉ nên dùng để debug hoặc giải thích match.
 
-Gợi ý UI:
+## 6. Get Saved Recommendations
+
+Dùng API này khi FE reload trang kết quả hoặc muốn xem lại recommendation đã sinh trước đó.
 
 ```txt
-Radar chart: dùng normalized_score
-Tooltip     : hiển thị score / max_score, confidence, description
-Top groups  : dùng dominant_groups
-Chi tiết    : dùng group_analysis
-Ngành/nghề  : dùng career_recommendations
+GET /api/admission/recommendations/students/{student_id}
 ```
 
-## 10. TypeScript Types
+Response là danh sách `UniversityRecommendation`, cùng contract với `recommendations` ở endpoint RAG.
+
+Lưu ý bảo mật hiện tại:
+
+- API này nhận `student_id` trên path.
+- FE chỉ nên gọi với `student.student_id` của user đang đăng nhập.
+- Nếu sau này cần bảo mật chặt hơn, backend nên thêm auth guard cho endpoint này.
+
+## 7. Frontend Rendering Notes
+
+### Recommendation Card
+
+Field nên dùng:
 
 ```ts
-export type RiasecGroup = "R" | "I" | "A" | "S" | "E" | "C";
-export type RiasecScore = Record<RiasecGroup, number>;
-export type RiasecStatus = "in_progress" | "completed";
+const image = item.logo?.[0];
+const title = item.name_universities;
+const major = item.name_majors;
+const typeLabel = item.type === 0 ? "Trong nước" : "Ngoài nước";
+const description = item.description;
+```
 
-export interface Student {
+Không dùng ảnh của item đầu tiên cho toàn bộ card. Luôn dùng:
+
+```ts
+item.logo?.[0]
+```
+
+### Recommendation Detail
+
+Field nên render:
+
+```ts
+item.logo                         // gallery images
+item.description                  // card preview text
+item.content.document.html        // full source markdown rendered as HTML
+item.content.document.markdown    // full source markdown, optional fallback/debug
+item.content.overview
+item.content.advantages
+item.content.admission_method
+item.content.tuition_fee
+item.content.career_opportunities
+item.content.riasec
+item.content.source
+item.content.matched_context      // optional/debug/source chunk
+```
+
+FE nên render detail bằng `item.content.document.html`. Vì HTML này do backend sinh từ markdown nội bộ, FE có thể render bằng `dangerouslySetInnerHTML`, nhưng không trộn thêm HTML từ input người dùng vào cùng container.
+
+### Group Domestic/Foreign
+
+```ts
+const domestic = recommendations.filter((item) => item.type === 0);
+const foreign = recommendations.filter((item) => item.type === 1);
+```
+
+## 8. TypeScript Types
+
+```ts
+export interface UniversityRecommendation {
+  id: string;
   student_id: string;
-  full_name: string;
-  email: string;
-  dob?: string | null;
-  province: string;
-  area_code: string;
-  priority_group?: string | null;
-  target_province?: string | null;
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
+  logo: string[];
+  description: string;
+  content: {
+    overview?: string;
+    document?: {
+      format: "html";
+      source_path?: string | null;
+      markdown: string;
+      html: string;
+    };
+    matched_context?: string;
+    career_opportunities?: string[];
+    tuition_fee?: {
+      value?: number | null;
+      currency?: string | null;
+      display?: string | null;
+    };
+    admission_method?: Record<string, unknown>;
+    advantages?: string[];
+    riasec?: Record<string, unknown>;
+    source?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  type: 0 | 1;
+  name_universities: string;
+  name_majors: string;
   updated_at: string;
 }
 
-export interface AuthResponse {
-  access_token: string;
-  token_type: "bearer";
-  expires_in: number;
-  student: Student;
-}
-
-export interface RiasecSession {
-  session_id: string;
-  student_id: string;
-  status: RiasecStatus;
-  current_step: number;
-  min_steps: number;
-  max_steps: number;
-  scores: RiasecScore;
-  confidence: RiasecScore;
-  entropy: number;
-  current_focus_groups: RiasecGroup[];
-  riasec_code?: string | null;
-  termination_reason?: string | null;
-  final_summary?: string | null;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string | null;
-}
-
-export interface RiasecEvidence {
-  group: RiasecGroup;
-  quote: string;
-  strength: number;
-  confidence: number;
-}
-
-export interface RiasecSignal {
-  scores?: Partial<RiasecScore>;
-  confidence?: Partial<RiasecScore>;
-  focus_groups?: RiasecGroup[];
-  primary_groups?: RiasecGroup[];
-  detected_traits?: string[];
-  evidence?: RiasecEvidence[];
-  reasoning?: string;
-  scenario_message_id?: string | null;
-  scenario_type?: string | null;
-}
-
-export interface RiasecMessage {
-  message_id: string;
-  session_id: string;
-  role: "assistant" | "user" | "system";
-  content: string;
-  message_type:
-    | "anchor_scenario"
-    | "adaptive_scenario"
-    | "answer"
-    | "invalid_answer"
-    | "answer_warning"
-    | "final_result";
-  metadata_json?: Record<string, unknown> | null;
-  riasec_signal?: RiasecSignal | null;
-  created_at: string;
-}
-
-export interface StartRiasecResponse {
-  session: RiasecSession;
-  question: RiasecMessage;
-}
-
-export interface SubmitAnswerResponse {
-  status: RiasecStatus;
-  session: RiasecSession;
-  user_message: RiasecMessage;
-  assistant_message: RiasecMessage | null;
-  dcp_id: string | null;
-}
-
-export interface RadarAxis {
-  group: RiasecGroup;
-  label: string;
-  score: number;
-  max_score: number;
-  normalized_score: number;
-  confidence: number;
-  description: string;
-}
-
-export interface RadarChart {
-  type: "riasec_radar";
-  max_score: number;
-  axes: RadarAxis[];
-}
-
-export interface DominantGroup {
-  group: RiasecGroup;
-  label: string;
-  score: number;
-  confidence: number;
-  description: string;
-}
-
-export interface GroupAnalysis {
-  group: RiasecGroup;
-  name: string;
-  label: string;
-  score: number;
-  confidence: number;
-  level: "low" | "emerging" | "medium" | "high";
-  description: string;
-  career_groups: string[];
-  recommended_majors: string[];
-  suitable_roles: string[];
-  digital_competencies: string[];
-}
-
-export interface CareerRecommendations {
-  riasec_code: string;
-  career_groups: string[];
-  recommended_majors: string[];
-  suitable_roles: string[];
-  digital_competencies: Partial<Record<RiasecGroup, string[]>>;
-}
-
-export interface DigitalCompetencyProfile {
-  dcp_id: string;
-  student_id: string;
-  session_id: string;
-  riasec_code: string;
-  scores: RiasecScore;
-  confidence: RiasecScore;
-  career_groups: string[];
-  digital_competencies: Partial<Record<RiasecGroup, string[]>>;
-  recommended_majors: string[];
-  summary: string;
-  created_at: string;
-  radar_chart: RadarChart | null;
-  dominant_groups: DominantGroup[] | null;
-  group_analysis: GroupAnalysis[] | null;
-  career_recommendations: CareerRecommendations | null;
+export interface RagSearchResponse {
+  query_used: {
+    optimized_query: string;
+    target_countries: string[];
+    target_majors: string[];
+    budget_limit_usd: number | null;
+    min_ielts: number | null;
+    keywords: string[];
+  };
+  results_count: number;
+  is_background_crawling: boolean;
+  saved_recommendations_count: number;
+  recommendations: UniversityRecommendation[];
+  data: {
+    domestic: unknown[];
+    foreign: unknown[];
+  };
 }
 ```
 
-## 11. UI Behavior Bắt Buộc
-
-Khi bắt đầu test:
-
-1. Kiểm tra token.
-2. Gọi `POST /api/riasec/sessions`.
-3. Hiển thị `response.question.content`.
-4. Lưu `session_id`.
-
-Khi gửi câu trả lời:
-
-1. Disable nút gửi trong lúc loading.
-2. Gọi `POST /api/riasec/sessions/{session_id}/answers`.
-3. Nếu `assistant_message.message_type === "answer_warning"`:
-   - Hiển thị warning.
-   - Không tăng progress.
-   - Giữ nguyên câu hỏi hiện tại.
-4. Nếu `status === "in_progress"`:
-   - Clear warning.
-   - Clear textarea.
-   - Hiển thị `assistant_message.content`.
-   - Cập nhật `session`, `scores`, `confidence`.
-5. Nếu `status === "completed"`:
-   - Lưu `dcp_id`.
-   - Điều hướng sang màn kết quả.
-   - Gọi `GET /api/riasec/profiles/{dcp_id}`.
-
-Progress gợi ý:
-
-```ts
-const answered = session.current_step;
-const total = session.max_steps;
-const percent = Math.round((answered / total) * 100);
-```
-
-Nếu muốn hiển thị câu hỏi hiện tại:
-
-```ts
-const displayQuestionNo = Math.min(session.current_step + 1, session.max_steps);
-```
-
-## 12. Error Handling
+## 9. Error Handling
 
 Các lỗi thường gặp:
 
 ```txt
-400: Request không hợp lệ
-401: Token sai hoặc hết hạn
-403: Không có quyền truy cập session/profile
-404: Không tìm thấy resource
-422: Body không đúng schema, ví dụ answer_text rỗng
-502: Gateway hoặc service proxy lỗi
-504: Service timeout
+400: Request không hợp lệ hoặc internal service trả lỗi.
+401: Thiếu token, token sai hoặc token hết hạn.
+403: Không có quyền truy cập resource.
+404: Không tìm thấy profile, academic record, session hoặc dcp.
+422: Body không đúng JSON/schema.
+429: Gemini API hết quota/spending cap.
+500: Lỗi server.
+502/504: Gateway hoặc service nội bộ lỗi/timeout.
 ```
 
-Xử lý `401`:
+`422 JSON decode error` thường do body Swagger không phải JSON hợp lệ, ví dụ dấu phẩy thừa:
 
-```ts
-localStorage.removeItem("access_token");
-localStorage.removeItem("student");
-router.push("/login");
+```json
+{
+  "dcp_id": "uuid",
+}
 ```
 
-## 13. API Không Nên Gọi Từ FE
+Body đúng:
 
-Không gọi trực tiếp:
+```json
+{
+  "dcp_id": "uuid"
+}
+```
+
+## 10. API Không Dành Cho FE
+
+Không gọi từ FE:
 
 ```txt
-http://localhost:8001
-http://localhost:8002
-http://localhost:8003
-http://localhost:8004
+POST /api/admission/recommendations/bulk
+POST /api/rag/ingestion/documents
 ```
 
-Không gửi `student_id` khi tạo RIASEC session.
+Các API này dành cho backend/admin/devops:
 
-Flow FE chính chỉ cần:
+- `POST /api/rag/ingestion/documents`: dùng khi thêm/sửa markdown trong `backend/data`.
+- `POST /api/admission/recommendations/bulk`: RAG service gọi nội bộ để replace recommendation.
 
-```txt
-POST /api/profile/auth/register
-POST /api/profile/auth/login
-GET  /api/profile/auth/me
-POST /api/riasec/sessions
-POST /api/riasec/sessions/{session_id}/answers
-GET  /api/riasec/profiles/{dcp_id}
-```
+Khi sửa file markdown trong `backend/data`, dữ liệu không tự embedding lại ngay. Cần gọi ingestion để refresh `rag.document_chunks`; sau đó gọi search để replace recommendation đã lưu.
