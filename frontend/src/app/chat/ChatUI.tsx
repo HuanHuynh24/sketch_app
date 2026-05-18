@@ -5,43 +5,31 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import {
   AlertTriangle,
-  BarChart3,
   Bot,
   Brain,
   CheckCircle2,
-  Compass,
-  GraduationCap,
   LoaderCircle,
   MessageSquare,
-  RefreshCw,
   SendHorizontal,
-  Sparkles,
-  Trophy,
   User,
   Zap,
 } from "lucide-react";
 import {
   ApiError,
-  DigitalCompetencyProfile,
-  RadarAxis,
   RiasecGroup,
   RiasecMessage,
   RiasecMessageType,
-  RiasecScore,
   RiasecSession,
   clearAuthSession,
   getAccessToken,
   getMe,
-  getRiasecProfile,
   startRiasecSession,
   submitRiasecAnswer,
 } from "@/lib/api";
-import { ScoreBars } from './components/ScoreBars';
-import { RiasecRadar } from './components/RiasecRadar';
-import { ResultPanel } from './components/ResultPanel';
 import { SubmitStatus } from './components/SubmitStatus';
 
 interface Message {
@@ -119,12 +107,10 @@ function getAssistantResponseMessages(data: {
 
 
 export default function ChatUI() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [session, setSession] = useState<RiasecSession | null>(null);
-  const [profile, setProfile] = useState<DigitalCompetencyProfile | null>(null);
-  const [dcpId, setDcpId] = useState<string | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [warning, setWarning] = useState("");
   const [error, setError] = useState("");
   const [authError, setAuthError] = useState("");
@@ -155,9 +141,6 @@ export default function ChatUI() {
     setWarning("");
     setError("");
     setAuthError("");
-    setProfile(null);
-    setDcpId(null);
-    setIsLoadingProfile(false);
     setSession(null);
     setMessages([]);
 
@@ -196,7 +179,7 @@ export default function ChatUI() {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
     }, 100);
-  }, [messages, profile, warning, submitStage, isLoadingProfile]);
+  }, [messages, warning, submitStage]);
 
   const handleSend = async () => {
     const answerText = input.trim();
@@ -242,16 +225,8 @@ export default function ChatUI() {
 
       if (data.status === "completed") {
         if (data.dcp_id) {
-          setDcpId(data.dcp_id);
-          setIsLoadingProfile(true);
-          try {
-            const dcpProfile = await getRiasecProfile(data.dcp_id);
-            setProfile(dcpProfile);
-          } catch {
-            // Fetch thất bại
-          } finally {
-            setIsLoadingProfile(false);
-          }
+          router.replace(`/profile?dcp_id=${data.dcp_id}`);
+          return;
         } else {
           setError("Bài đánh giá đã hoàn tất nhưng backend chưa trả về mã kết quả.");
         }
@@ -447,35 +422,6 @@ export default function ChatUI() {
                 <AlertTriangle size={16} className="text-[#f43f5e]" />
                 <p className="text-sm font-medium text-[#f43f5e]">{warning}</p>
               </div>
-            </div>
-          )}
-
-          {isLoadingProfile && (
-            <div className="w-full glass-panel border border-[#06b6d4]/30 bg-gradient-to-br from-[#06b6d4]/5 to-[#7c3aed]/10 p-12 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden animate-[slideUp_0.5s_ease-out_forwards]">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
-              <div className="relative z-10">
-                <div className="w-24 h-24 mx-auto mb-8 relative flex items-center justify-center">
-                  <div className="absolute inset-0 rounded-full border-[3px] border-[#06b6d4]/30 border-t-[#06b6d4] animate-spin shadow-[0_0_20px_rgba(6,182,212,0.4)]"></div>
-                  <Brain size={32} className="text-[#06b6d4] animate-pulse" />
-                </div>
-                <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#06b6d4] mb-3 tracking-tight uppercase">Đang giải mã dữ liệu</h3>
-                <p className="text-[#94a3b8] text-lg max-w-md mx-auto">AI đang tổng hợp mô hình RIASEC và quét cơ sở dữ liệu nghề nghiệp khổng lồ...</p>
-              </div>
-            </div>
-          )}
-
-          {!isLoadingProfile && profile && <ResultPanel profile={profile} />}
-
-          {!isLoadingProfile && !profile && dcpId && (
-             <div className="w-full glass-panel border border-[#f43f5e]/30 bg-[#f43f5e]/10 p-10 rounded-[2.5rem] text-center shadow-[0_20px_50px_rgba(244,63,94,0.15)]">
-              <div className="w-20 h-20 bg-[#f43f5e]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle size={32} className="text-[#f43f5e]" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Hiển thị báo cáo gián đoạn</h3>
-              <p className="text-[#94a3b8] mb-8 text-lg">Bài đánh giá đã hoàn tất và lưu trữ thành công, nhưng gặp lỗi khi hiển thị trực tiếp.</p>
-              <Link href={`/profile?dcp_id=${dcpId}`} className="btn-premium px-8 py-3 text-lg inline-flex items-center gap-3">
-                 <Compass size={20}/> Tới không gian hồ sơ
-              </Link>
             </div>
           )}
 

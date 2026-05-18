@@ -34,6 +34,7 @@ import {
   Student,
   clearAuthSession,
   getAccessToken,
+  getLatestRiasecProfile,
   getMe,
   getRiasecProfile,
   getStoredStudent,
@@ -108,17 +109,24 @@ export default function ProfileClient() {
 
   useEffect(() => {
     async function loadRiasecResult() {
-      if (!dcpId || !getAccessToken()) {
+      if (!getAccessToken()) {
         return;
       }
 
       setIsResultLoading(true);
       setResultError("");
+      setRiasecProfile(null);
 
       try {
-        const result = await getRiasecProfile(dcpId);
+        const result = dcpId
+          ? await getRiasecProfile(dcpId)
+          : await getLatestRiasecProfile();
         setRiasecProfile(result);
-      } catch {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404 && !dcpId) {
+          return;
+        }
+
         setResultError("Không thể tải kết quả RIASEC. Vui lòng mở lại từ bài đánh giá hoặc làm lại RIASEC.");
       } finally {
         setIsResultLoading(false);

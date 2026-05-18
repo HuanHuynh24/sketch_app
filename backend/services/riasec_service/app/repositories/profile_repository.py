@@ -45,3 +45,14 @@ class ProfileRepository:
             .filter(DigitalCompetencyProfile.dcp_id == dcp_id)
             .first()
         )
+
+    def get_latest_by_student_id(
+        self,
+        student_id: UUID,
+    ) -> DigitalCompetencyProfile | None:
+        return (
+            self.db.query(DigitalCompetencyProfile)
+            .filter(DigitalCompetencyProfile.student_id == student_id)
+            .order_by(DigitalCompetencyProfile.created_at.desc())
+            .first()
+        )

@@ -7,6 +7,8 @@ class GeneratedQuestion(BaseModel):
     focus_groups: list[str]
     context: str
     question_style: str
+    expected_signals: dict[str, list[str]] | None = None
+    scoring_rubric: dict[str, str] | None = None
 
 
 class FinalReportResult(BaseModel):

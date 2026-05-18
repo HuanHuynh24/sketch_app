@@ -116,16 +116,24 @@ class SessionService:
             message_type="answer",
         )
 
+        question_focus_groups = self._extract_question_focus_groups(
+            last_question_message
+        )
+        question_metadata = (
+            last_question_message.metadata_json
+            if last_question_message and last_question_message.metadata_json
+            else {}
+        )
+
         scoring_result = await self.scoring_engine.score_answer(
             scenario=last_question,
             answer_text=answer_text,
+            focus_groups=question_focus_groups,
+            question_metadata=question_metadata,
         )
 
         new_scores = scoring_result.scores.model_dump()
         new_confidence = scoring_result.confidence.model_dump()
-        question_focus_groups = self._extract_question_focus_groups(
-            last_question_message
-        )
 
         scoring_signal = self._build_scoring_signal(
             last_question_message=last_question_message,
@@ -142,6 +150,7 @@ class SessionService:
         session.scores = self.scoring_engine.merge_scores(
             current_scores=session.scores,
             new_scores=new_scores,
+            new_confidence=new_confidence,
         )
         session.confidence = self.scoring_engine.merge_confidence(
             current_confidence=session.confidence,
@@ -259,12 +268,18 @@ class SessionService:
             riasec_code=session.riasec_code,
             scores=session.scores,
             confidence=session.confidence,
-            career_groups=self.report_service.build_career_groups(session.riasec_code),
+            career_groups=self.report_service.build_career_groups(
+                session.riasec_code,
+                scores=session.scores,
+                confidence=session.confidence,
+            ),
             digital_competencies=self.report_service.build_digital_competencies(
                 session.riasec_code
             ),
             recommended_majors=self.report_service.build_recommended_majors(
-                session.riasec_code
+                session.riasec_code,
+                scores=session.scores,
+                confidence=session.confidence,
             ),
             summary=final_summary,
         )

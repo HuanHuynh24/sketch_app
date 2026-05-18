@@ -26,24 +26,28 @@ export function RiasecResultSummary({ profile }: { profile: DigitalCompetencyPro
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#7c3aed] opacity-30 blur-[120px] rounded-full animate-pulse-glow pointer-events-none"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#06b6d4] opacity-20 blur-[120px] rounded-full animate-float-smooth pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-8 mb-12 border-b border-white/10 pb-8">
-          <div>
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-white/10 to-white/5 border border-white/10 rounded-full text-sm font-bold text-[#06b6d4] uppercase tracking-[0.2em] mb-6 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-              <Sparkles size={16} className="text-[#c084fc]" /> Hồ sơ năng lực phân tích bởi AI
+        <div className="relative z-10 mb-12 border-b border-white/10 pb-8">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-white/10 to-white/5 border border-white/10 rounded-full text-sm font-bold text-[#06b6d4] uppercase tracking-[0.2em] mb-6 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+                <Sparkles size={16} className="text-[#c084fc]" /> Hồ sơ năng lực phân tích bởi AI
+              </div>
+              <h3 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-[#7c3aed] filter drop-shadow-lg">
+                {profile.riasec_code}
+              </h3>
             </div>
-            <h3 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-[#7c3aed] mb-4 filter drop-shadow-lg">
-              {profile.riasec_code}
-            </h3>
-            <p className="max-w-3xl text-[#94a3b8] text-lg md:text-xl leading-relaxed">
-              {profile.summary}
-            </p>
+            <Link
+              href="/chat"
+              className="btn-premium shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 text-lg"
+            >
+              <RefreshCw size={20} /> Làm lại RIASEC
+            </Link>
           </div>
-          <Link
-            href="/chat"
-            className="btn-premium shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 text-lg"
-          >
-            <RefreshCw size={20} /> Làm lại RIASEC
-          </Link>
+          <div className="w-full text-[#94a3b8] text-lg md:text-xl leading-relaxed text-justify space-y-4">
+            {profile.summary.split('\n').map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-8 relative z-10">

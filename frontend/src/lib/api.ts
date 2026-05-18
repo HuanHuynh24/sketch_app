@@ -422,3 +422,10 @@ export async function getRiasecProfile(dcpId: string) {
     auth: true,
   });
 }
+
+export async function getLatestRiasecProfile() {
+  return apiRequest<DigitalCompetencyProfile>("/api/riasec/profiles/latest", {
+    method: "GET",
+    auth: true,
+  });
+}

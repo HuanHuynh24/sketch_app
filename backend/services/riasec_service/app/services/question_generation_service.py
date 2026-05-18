@@ -5,6 +5,7 @@ from app.services.fallback_questions import select_fallback_question
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
 from app.services.question_policy import QuestionPolicy
+from app.services.riasec_knowledge import RIASEC_GROUP_PROFILES
 
 
 logger = logging.getLogger(__name__)
@@ -121,12 +122,34 @@ class QuestionGenerationService:
                 "Em muốn nhận phần việc nào, em sẽ bắt đầu ra sao và vì sao?"
             )
 
+        normalized_focus_groups = [
+            str(group)
+            for group in (question_data.get("focus_groups") or focus_groups)
+            if str(group) in RIASEC_GROUP_PROFILES
+        ] or focus_groups
+
+        expected_signals = question_data.get("expected_signals") or {
+            group: RIASEC_GROUP_PROFILES.get(group, {}).get(
+                "assessment_indicators",
+                [],
+            )[:3]
+            for group in normalized_focus_groups
+        }
+
+        scoring_rubric = question_data.get("scoring_rubric") or {
+            "strong": "Có hành động cụ thể, lý do rõ, và bằng chứng hành vi khớp nhóm.",
+            "weak": "Chỉ nêu sở thích chung hoặc chọn hướng nhưng chưa giải thích.",
+            "clarify": "Trả lời chung chung, chọn nhiều hướng mà không nêu ưu tiên.",
+        }
+
         return {
             "type": question_data.get("type") or default_type,
             "content": content,
-            "focus_groups": question_data.get("focus_groups") or focus_groups,
+            "focus_groups": normalized_focus_groups,
             "context": question_data.get("context") or fallback_context,
             "question_style": question_data.get("question_style") or fallback_style,
+            "expected_signals": expected_signals,
+            "scoring_rubric": scoring_rubric,
         }
 
     def fallback_adaptive_question(
@@ -147,4 +170,16 @@ class QuestionGenerationService:
             "focus_groups": focus_groups,
             "context": context,
             "question_style": question_style,
+            "expected_signals": {
+                group: RIASEC_GROUP_PROFILES.get(group, {}).get(
+                    "assessment_indicators",
+                    [],
+                )[:3]
+                for group in focus_groups
+            },
+            "scoring_rubric": {
+                "strong": "Có hành động cụ thể, lý do rõ, và bằng chứng hành vi khớp nhóm.",
+                "weak": "Chỉ nêu sở thích chung hoặc chọn hướng nhưng chưa giải thích.",
+                "clarify": "Trả lời chung chung, chọn nhiều hướng mà không nêu ưu tiên.",
+            },
         }

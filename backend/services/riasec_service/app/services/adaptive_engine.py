@@ -6,6 +6,7 @@ from app.core.constants import RIASEC_GROUPS
 
 DEFAULT_FOCUS_GROUPS = ["R", "I"]
 FOCUS_GROUP_POOL_SIZE = 4
+MAX_BROAD_FOCUS_SIZE = 3
 
 
 class AdaptiveEngine:
@@ -39,6 +40,12 @@ class AdaptiveEngine:
         confidence = confidence or {}
         asked_focus_groups = asked_focus_groups or []
 
+        coverage_counts = self._coverage_counts(asked_focus_groups)
+        total_score = sum(float(scores.get(group, 0)) for group in RIASEC_GROUPS)
+
+        if total_score <= 0:
+            return self._least_covered_pair(coverage_counts)
+
         top_groups = self._sort_scores(scores)[:FOCUS_GROUP_POOL_SIZE]
         candidate_pairs = []
 
@@ -55,14 +62,21 @@ class AdaptiveEngine:
                 avg_confidence = self._average(c1, c2)
 
                 priority = 0.0
-                priority += max(0, 10 - score_gap)
-                priority += avg_score
+                priority += max(0, 4 - score_gap) * 2
+                priority += avg_score * 1.5
                 priority += max(0, 1 - avg_confidence) * 5
+                priority += max(
+                    0,
+                    2 - self._average(
+                        coverage_counts.get(g1, 0),
+                        coverage_counts.get(g2, 0),
+                    ),
+                ) * 2
 
                 pair = sorted([g1, g2])
 
                 if pair in asked_focus_groups:
-                    priority -= 4
+                    priority -= 6
 
                 candidate_pairs.append(
                     {
@@ -80,7 +94,7 @@ class AdaptiveEngine:
         if candidate_pairs:
             return candidate_pairs[0]["pair"]
 
-        return DEFAULT_FOCUS_GROUPS
+        return self._least_covered_pair(coverage_counts)
 
     def should_terminate(
         self,
@@ -129,3 +143,25 @@ class AdaptiveEngine:
 
     def _average(self, *values: float) -> float:
         return sum(values) / len(values)
+
+    def _coverage_counts(self, asked_focus_groups: list[list[str]]) -> dict[str, int]:
+        counts = {group: 0 for group in RIASEC_GROUPS}
+
+        for focus_groups in asked_focus_groups:
+            if len(focus_groups) > MAX_BROAD_FOCUS_SIZE:
+                continue
+
+            for group in focus_groups:
+                if group in counts:
+                    counts[group] += 1
+
+        return counts
+
+    def _least_covered_pair(self, coverage_counts: dict[str, int]) -> list[str]:
+        return sorted(
+            RIASEC_GROUPS,
+            key=lambda group: (
+                coverage_counts.get(group, 0),
+                RIASEC_GROUPS.index(group),
+            ),
+        )[:2] or DEFAULT_FOCUS_GROUPS

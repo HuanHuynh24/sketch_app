@@ -39,7 +39,20 @@ Return only valid JSON:
   "content": "...",
   "focus_groups": ["R", "I", "A", "S", "E", "C"],
   "context": "anchor",
-  "question_style": "role_choice"
+  "question_style": "role_choice",
+  "expected_signals": {{
+    "R": ["..."],
+    "I": ["..."],
+    "A": ["..."],
+    "S": ["..."],
+    "E": ["..."],
+    "C": ["..."]
+  }},
+  "scoring_rubric": {{
+    "strong": "Hành động cụ thể + lý do rõ + bằng chứng hành vi.",
+    "weak": "Chỉ nêu sở thích hoặc chọn hướng chung chung.",
+    "clarify": "Chọn nhiều hướng mà không ưu tiên hoặc không có lý do."
+  }}
 }}
 """
 
@@ -91,6 +104,9 @@ Nếu không hợp lệ:
         self,
         scenario: str,
         answer_text: str,
+        focus_groups: list[str] | None = None,
+        expected_signals: dict | None = None,
+        scoring_rubric: dict | None = None,
     ) -> str:
         return f"""
 Bạn là hệ thống chấm điểm RIASEC cho học sinh THPT Việt Nam.
@@ -103,6 +119,15 @@ Tín hiệu đánh giá rút từ bộ câu hỏi RIASEC gốc:
 
 Tình huống đã hỏi:
 {scenario}
+
+Nhóm RIASEC câu hỏi đang tập trung phân biệt:
+{focus_groups or []}
+
+Tín hiệu hợp lệ kỳ vọng cho câu hỏi này:
+{expected_signals or {}}
+
+Rubric riêng của câu hỏi:
+{scoring_rubric or {}}
 
 Câu trả lời của học sinh:
 {answer_text}
@@ -126,6 +151,9 @@ Yêu cầu đánh giá:
 - primary_groups là 1-3 nhóm có bằng chứng rõ nhất.
 - evidence phải chỉ ra group, quote ngắn từ câu trả lời, strength và confidence.
 - Không chấm điểm cao cho nhóm nếu không có evidence rõ.
+- Với nhóm không nằm trong focus_groups, chỉ cho trên 1.0 nếu câu trả lời có bằng chứng rất rõ.
+- Nếu học sinh chọn nhiều hướng nhưng không nêu ưu tiên, điểm và confidence phải thấp.
+- Evidence quote là bắt buộc cho mọi nhóm có điểm > 0.
 - reasoning ngắn gọn bằng tiếng Việt.
 - detected_traits là các tín hiệu hành vi rút ra trực tiếp từ câu trả lời.
 - Không giải thích ngoài JSON.
@@ -224,7 +252,16 @@ Return only valid JSON:
   "content": "...",
   "focus_groups": {focus_groups},
   "context": "{suggested_context}",
-  "question_style": "{question_style}"
+  "question_style": "{question_style}",
+  "expected_signals": {{
+    "R": ["chỉ đưa nhóm có trong focus_groups"],
+    "I": ["chỉ đưa nhóm có trong focus_groups"]
+  }},
+  "scoring_rubric": {{
+    "strong": "Hành động cụ thể + lý do rõ + bằng chứng hành vi khớp nhóm đang phân biệt.",
+    "weak": "Chọn hướng nhưng chưa giải thích rõ hành động hoặc lý do.",
+    "clarify": "Trả lời nước đôi, chọn cả hai hoặc không nêu ưu tiên."
+  }}
 }}
 """
 

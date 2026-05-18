@@ -1,11 +1,16 @@
 from app.core.config import settings
+from app.core.constants import RIASEC_GROUPS
 from app.schemas.llm import FinalReportResult
 from app.services.llm_client import LLMClient
 from app.services.prompt_engine import PromptEngine
-from app.services.riasec_knowledge import (
-    RIASEC_GROUP_PROFILES,
-    unique_items_for_code,
-)
+from app.services.riasec_knowledge import RIASEC_GROUP_PROFILES
+
+
+DEFAULT_LIMITS = {
+    "career_groups": 5,
+    "recommended_majors": 8,
+    "suitable_roles": 5,
+}
 
 
 class ReportService:
@@ -20,9 +25,21 @@ class ReportService:
         confidence: dict,
         riasec_code: str,
     ) -> str:
-        career_groups = self.build_career_groups(riasec_code)
-        recommended_majors = self.build_recommended_majors(riasec_code)
-        suitable_roles = self.build_suitable_roles(riasec_code)
+        career_groups = self.build_career_groups(
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+        )
+        recommended_majors = self.build_recommended_majors(
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+        )
+        suitable_roles = self.build_suitable_roles(
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+        )
         digital_competencies = self.build_digital_competencies(riasec_code)
 
         prompt = self.prompt_engine.build_final_report_prompt(
@@ -69,8 +86,20 @@ class ReportService:
                 scores=scores,
             )
 
-    def build_career_groups(self, riasec_code: str) -> list[str]:
-        return unique_items_for_code("career_groups", riasec_code)
+    def build_career_groups(
+        self,
+        riasec_code: str,
+        scores: dict | None = None,
+        confidence: dict | None = None,
+        limit: int | None = None,
+    ) -> list[str]:
+        return self._rank_items_for_code(
+            "career_groups",
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+            limit=limit or DEFAULT_LIMITS["career_groups"],
+        )
 
     def build_digital_competencies(self, riasec_code: str) -> dict:
         return {
@@ -78,11 +107,35 @@ class ReportService:
             for group in riasec_code
         }
 
-    def build_recommended_majors(self, riasec_code: str) -> list[str]:
-        return unique_items_for_code("recommended_majors", riasec_code)
+    def build_recommended_majors(
+        self,
+        riasec_code: str,
+        scores: dict | None = None,
+        confidence: dict | None = None,
+        limit: int | None = None,
+    ) -> list[str]:
+        return self._rank_items_for_code(
+            "recommended_majors",
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+            limit=limit or DEFAULT_LIMITS["recommended_majors"],
+        )
 
-    def build_suitable_roles(self, riasec_code: str) -> list[str]:
-        return unique_items_for_code("suitable_roles", riasec_code)
+    def build_suitable_roles(
+        self,
+        riasec_code: str,
+        scores: dict | None = None,
+        confidence: dict | None = None,
+        limit: int | None = None,
+    ) -> list[str]:
+        return self._rank_items_for_code(
+            "suitable_roles",
+            riasec_code,
+            scores=scores,
+            confidence=confidence,
+            limit=limit or DEFAULT_LIMITS["suitable_roles"],
+        )
 
     def build_result_payload(
         self,
@@ -94,7 +147,11 @@ class ReportService:
             "radar_chart": self.build_radar_chart(scores, confidence),
             "dominant_groups": self.build_dominant_groups(scores, confidence),
             "group_analysis": self.build_group_analysis(scores, confidence),
-            "career_recommendations": self.build_career_recommendations(riasec_code),
+            "career_recommendations": self.build_ranked_career_recommendations(
+                riasec_code,
+                scores=scores,
+                confidence=confidence,
+            ),
         }
 
     def build_radar_chart(self, scores: dict, confidence: dict) -> dict:
@@ -176,6 +233,81 @@ class ReportService:
             "digital_competencies": self.build_digital_competencies(riasec_code),
         }
 
+    def build_ranked_career_recommendations(
+        self,
+        riasec_code: str,
+        scores: dict,
+        confidence: dict,
+    ) -> dict:
+        return {
+            "riasec_code": riasec_code,
+            "career_groups": self.build_career_groups(
+                riasec_code,
+                scores=scores,
+                confidence=confidence,
+            ),
+            "recommended_majors": self.build_recommended_majors(
+                riasec_code,
+                scores=scores,
+                confidence=confidence,
+            ),
+            "suitable_roles": self.build_suitable_roles(
+                riasec_code,
+                scores=scores,
+                confidence=confidence,
+            ),
+            "digital_competencies": self.build_digital_competencies(riasec_code),
+        }
+
+    def _rank_items_for_code(
+        self,
+        field_name: str,
+        riasec_code: str,
+        scores: dict | None = None,
+        confidence: dict | None = None,
+        limit: int = 8,
+    ) -> list[str]:
+        candidate_scores: dict[str, float] = {}
+        candidate_sources: dict[str, set[str]] = {}
+        valid_code = [
+            group
+            for group in riasec_code
+            if group in RIASEC_GROUPS
+        ]
+
+        if not valid_code:
+            valid_code = RIASEC_GROUPS[:3]
+
+        for code_position, group in enumerate(valid_code):
+            profile = RIASEC_GROUP_PROFILES.get(group, {})
+            items = profile.get(field_name, [])
+            group_score = float((scores or {}).get(group, 1))
+            group_confidence = float((confidence or {}).get(group, 0.6))
+            code_weight = max(1.0, len(valid_code) - code_position)
+            group_weight = max(group_score, 0.5) * max(group_confidence, 0.35)
+
+            for item_position, item in enumerate(items):
+                item_weight = 1 / (1 + item_position * 0.08)
+                candidate_scores[item] = candidate_scores.get(item, 0) + (
+                    code_weight * group_weight * item_weight
+                )
+                candidate_sources.setdefault(item, set()).add(group)
+
+        ranked_items = sorted(
+            candidate_scores.items(),
+            key=lambda item: (
+                item[1],
+                len(candidate_sources.get(item[0], set())),
+                -len(item[0]),
+            ),
+            reverse=True,
+        )
+
+        return [
+            item
+            for item, _score in ranked_items[:limit]
+        ]
+
     def _sort_groups_by_score(self, scores: dict) -> list[tuple[str, float]]:
         return sorted(
             [
@@ -200,9 +332,9 @@ class ReportService:
 
     def build_summary(self, riasec_code: str, scores: dict) -> str:
         top = riasec_code[:3]
-        career_groups = self.build_career_groups(top)[:6]
-        majors = self.build_recommended_majors(top)[:6]
-        roles = self.build_suitable_roles(top)[:6]
+        career_groups = self.build_career_groups(top, scores=scores, limit=5)
+        majors = self.build_recommended_majors(top, scores=scores, limit=6)
+        roles = self.build_suitable_roles(top, scores=scores, limit=5)
 
         return (
             f"Kết quả hiện tại cho thấy bạn nổi bật ở nhóm {top}. "

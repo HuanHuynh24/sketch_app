@@ -48,9 +48,11 @@ export function ResultPanel({ profile }: { profile: DigitalCompetencyProfile }) 
           <h3 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-[#7c3aed] mb-6 filter drop-shadow-lg">
             {profile.riasec_code}
           </h3>
-          <p className="max-w-3xl text-[#94a3b8] text-lg md:text-xl leading-relaxed">
-            {profile.summary}
-          </p>
+          <div className="w-full text-[#94a3b8] text-lg md:text-xl leading-relaxed text-justify space-y-4">
+            {profile.summary.split('\n').map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
           <div className="mt-8">
             <Link
               href={`/profile?dcp_id=${profile.dcp_id}`}
